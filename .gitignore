@@ -1,18 +1,20 @@
 ```
-# Build artifacts
-*.o
-*.obj
-*.a
-*.lib
+# Go binaries
+*.exe
 *.dll
 *.so
-*.dylib
-*.exe
+*.a
+*.obj
 *.out
+
+# Go build artifacts
+bin/
+pkg/
+*.test
+*.prof
 
 # Dependencies
 vendor/
-Godeps/
 
 # Logs
 *.log
@@ -20,14 +22,9 @@ Godeps/
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# IDE
+# Editors
 .vscode/
 .idea/
 *.swp
@@ -37,6 +34,11 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
 
 # Compressed files
 *.zip
