@@ -133,6 +133,44 @@ func (s DeviceStatus) Validate() error {
 	}
 }
 
+// ModuleStatus представляет статусы модуля
+type ModuleStatus string
+
+const (
+	ModuleStatusOffline      ModuleStatus = "offline"
+	ModuleStatusActive       ModuleStatus = "active"
+	ModuleStatusPlanned      ModuleStatus = "planned"
+	ModuleStatusStaged       ModuleStatus = "staged"
+	ModuleStatusFailed       ModuleStatus = "failed"
+	ModuleStatusInventory    ModuleStatus = "inventory"
+	ModuleStatusDecommissioning ModuleStatus = "decommissioning"
+)
+
+// GetAllModuleStatuses возвращает все возможные статусы модуля
+func GetAllModuleStatuses() []ModuleStatus {
+	return []ModuleStatus{
+		ModuleStatusOffline,
+		ModuleStatusActive,
+		ModuleStatusPlanned,
+		ModuleStatusStaged,
+		ModuleStatusFailed,
+		ModuleStatusInventory,
+		ModuleStatusDecommissioning,
+	}
+}
+
+// Validate проверяет корректность статуса модуля
+func (s ModuleStatus) Validate() error {
+	switch s {
+	case ModuleStatusOffline, ModuleStatusActive, ModuleStatusPlanned,
+		ModuleStatusStaged, ModuleStatusFailed, ModuleStatusInventory,
+		ModuleStatusDecommissioning:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
 // RackType представляет типы стоек
 type RackType string
 
@@ -183,6 +221,99 @@ func GetAllRackDimensionUnits() []RackDimensionUnit {
 func (u RackDimensionUnit) Validate() error {
 	switch u {
 	case RackDimensionUnitMillimeter, RackDimensionUnitInch:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// SubdeviceRole представляет роли под-устройств
+type SubdeviceRole string
+
+const (
+	SubdeviceRoleParent SubdeviceRole = "parent"
+	SubdeviceRoleChild  SubdeviceRole = "child"
+)
+
+// GetAllSubdeviceRoles возвращает все возможные роли под-устройств
+func GetAllSubdeviceRoles() []SubdeviceRole {
+	return []SubdeviceRole{
+		SubdeviceRoleParent,
+		SubdeviceRoleChild,
+	}
+}
+
+// Validate проверяет корректность роли под-устройства
+func (r SubdeviceRole) Validate() error {
+	switch r {
+	case SubdeviceRoleParent, SubdeviceRoleChild:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// AirflowDirection представляет направление воздушного потока
+type AirflowDirection string
+
+const (
+	AirflowFrontToRear   AirflowDirection = "front-to-rear"
+	AirflowRearToFront   AirflowDirection = "rear-to-front"
+	AirflowLeftToRight   AirflowDirection = "left-to-right"
+	AirflowRightToLeft   AirflowDirection = "right-to-left"
+	AirflowSideToRear    AirflowDirection = "side-to-rear"
+	AirflowPassive       AirflowDirection = "passive"
+	AirflowMixed         AirflowDirection = "mixed"
+)
+
+// GetAllAirflowDirections возвращает все возможные направления воздушного потока
+func GetAllAirflowDirections() []AirflowDirection {
+	return []AirflowDirection{
+		AirflowFrontToRear,
+		AirflowRearToFront,
+		AirflowLeftToRight,
+		AirflowRightToLeft,
+		AirflowSideToRear,
+		AirflowPassive,
+		AirflowMixed,
+	}
+}
+
+// Validate проверяет корректность направления воздушного потока
+func (a AirflowDirection) Validate() error {
+	switch a {
+	case AirflowFrontToRear, AirflowRearToFront, AirflowLeftToRight,
+		AirflowRightToLeft, AirflowSideToRear, AirflowPassive, AirflowMixed:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// WeightUnit представляет единицы измерения веса
+type WeightUnit string
+
+const (
+	WeightUnitKilogram     WeightUnit = "kg"
+	WeightUnitGram         WeightUnit = "g"
+	WeightUnitPound        WeightUnit = "lb"
+	WeightUnitOunce        WeightUnit = "oz"
+)
+
+// GetAllWeightUnits возвращает все возможные единицы измерения веса
+func GetAllWeightUnits() []WeightUnit {
+	return []WeightUnit{
+		WeightUnitKilogram,
+		WeightUnitGram,
+		WeightUnitPound,
+		WeightUnitOunce,
+	}
+}
+
+// Validate проверяет корректность единицы измерения веса
+func (w WeightUnit) Validate() error {
+	switch w {
+	case WeightUnitKilogram, WeightUnitGram, WeightUnitPound, WeightUnitOunce:
 		return nil
 	default:
 		return types.ErrInvalidStatus
