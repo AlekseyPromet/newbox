@@ -319,3 +319,153 @@ func (w WeightUnit) Validate() error {
 		return types.ErrInvalidStatus
 	}
 }
+
+// PhaseType определяет тип электрической фазы.
+type PhaseType string
+
+const (
+	PhaseSingle PhaseType = "single-phase"
+	PhaseThree  PhaseType = "three-phase"
+)
+
+// GetAllPhaseTypes возвращает все возможные типы фаз
+func GetAllPhaseTypes() []PhaseType {
+	return []PhaseType{
+		PhaseSingle,
+		PhaseThree,
+	}
+}
+
+// Validate проверяет корректность типа фазы
+func (p PhaseType) Validate() error {
+	switch p {
+	case PhaseSingle, PhaseThree:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// PowerUnit определяет единицы измерения мощности.
+type PowerUnit string
+
+const (
+	PowerUnitW  PowerUnit = "W"
+	PowerUnitKW PowerUnit = "kW"
+)
+
+// GetAllPowerUnits возвращает все возможные единицы измерения мощности
+func GetAllPowerUnits() []PowerUnit {
+	return []PowerUnit{
+		PowerUnitW,
+		PowerUnitKW,
+	}
+}
+
+// Validate проверяет корректность единицы измерения мощности
+func (u PowerUnit) Validate() error {
+	switch u {
+	case PowerUnitW, PowerUnitKW:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// PowerFeedStatus определяет статус фидера питания.
+type PowerFeedStatus string
+
+const (
+	PowerFeedPlanned    PowerFeedStatus = "planned"
+	PowerFeedActive     PowerFeedStatus = "active"
+	PowerFeedOffline    PowerFeedStatus = "offline"
+	PowerFeedFailed     PowerFeedStatus = "failed"
+)
+
+// GetAllPowerFeedStatuses возвращает все возможные статусы фидера
+func GetAllPowerFeedStatuses() []PowerFeedStatus {
+	return []PowerFeedStatus{
+		PowerFeedPlanned,
+		PowerFeedActive,
+		PowerFeedOffline,
+		PowerFeedFailed,
+	}
+}
+
+// Validate проверяет корректность статуса фидера
+func (s PowerFeedStatus) Validate() error {
+	switch s {
+	case PowerFeedPlanned, PowerFeedActive, PowerFeedOffline, PowerFeedFailed:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// Color возвращает цвет статуса для UI
+func (s PowerFeedStatus) Color() string {
+	switch s {
+	case PowerFeedPlanned:
+		return "gray"
+	case PowerFeedActive:
+		return "green"
+	case PowerFeedOffline:
+		return "yellow"
+	case PowerFeedFailed:
+		return "red"
+	default:
+		return "gray"
+	}
+}
+
+// PowerFeedType определяет тип фидера (основной или резервный).
+type PowerFeedType string
+
+const (
+	PowerFeedPrimary   PowerFeedType = "primary"
+	PowerFeedRedundant PowerFeedType = "redundant"
+)
+
+// GetAllPowerFeedTypes возвращает все возможные типы фидеров
+func GetAllPowerFeedTypes() []PowerFeedType {
+	return []PowerFeedType{
+		PowerFeedPrimary,
+		PowerFeedRedundant,
+	}
+}
+
+// Validate проверяет корректность типа фидера
+func (t PowerFeedType) Validate() error {
+	switch t {
+	case PowerFeedPrimary, PowerFeedRedundant:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// PowerSupply определяет тип тока.
+type PowerSupply string
+
+const (
+	PowerSupplyAC PowerSupply = "AC"
+	PowerSupplyDC PowerSupply = "DC"
+)
+
+// GetAllPowerSupplies возвращает все возможные типы питания
+func GetAllPowerSupplies() []PowerSupply {
+	return []PowerSupply{
+		PowerSupplyAC,
+		PowerSupplyDC,
+	}
+}
+
+// Validate проверяет корректность типа питания
+func (s PowerSupply) Validate() error {
+	switch s {
+	case PowerSupplyAC, PowerSupplyDC:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}

@@ -1,25 +1,18 @@
 ```
-# Go build artifacts
+# Build artifacts
 *.o
+*.obj
 *.a
-*.so
-*.exe
+*.lib
 *.dll
+*.so
+*.dylib
+*.exe
 *.out
-
-# Go cache and modules
-go.mod
-go.sum
-!netbox_go/go.mod
-!netbox_go/go.sum
 
 # Dependencies
 vendor/
-
-# Build directories
-bin/
-pkg/
-target/
+Godeps/
 
 # Logs
 *.log
@@ -27,46 +20,23 @@ target/
 # Environment
 .env
 .env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# System
-.DS_Store
-Thumbs.db
+.env.*
 
 # Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Python (if co-existing)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
-.mypy_cache/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
 
-# Node (if co-existing)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Java (if co-existing)
-*.class
-*.jar
-*.war
-*.ear
-target/
-.gradle/
-build/
+# OS
+.DS_Store
+Thumbs.db
 
 # Compressed files
 *.zip
@@ -87,4 +57,8 @@ build/
 *.Z
 *.lz
 *.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```

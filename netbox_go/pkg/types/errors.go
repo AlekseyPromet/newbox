@@ -1,7 +1,10 @@
 // Package types содержит ошибки бизнес-логики для всего приложения
 package types
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // Ошибки бизнес-логики
 var (
@@ -12,3 +15,13 @@ var (
 	ErrInvalidOperation    = errors.New("invalid operation")
 	ErrConstraintViolation = errors.New("constraint violation")
 )
+
+// ValidationError представляет ошибку валидации поля
+type ValidationError struct {
+	Field   string
+	Message string
+}
+
+func (e *ValidationError) Error() string {
+	return fmt.Sprintf("validation error on field '%s': %s", e.Field, e.Message)
+}
