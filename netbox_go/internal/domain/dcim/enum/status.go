@@ -1,7 +1,124 @@
-// Package enum содержит перечисления (enums) для домена DCIM
+// Package enum содержит перечисления для домена DCIM
 package enum
 
 import "github.com/AlekseyPromet/netbox_go/pkg/types"
+
+// ClusterStatus представляет статусы кластера
+type ClusterStatus string
+
+const (
+	ClusterStatusPlanned     ClusterStatus = "planned"
+	ClusterStatusStaging     ClusterStatus = "staging"
+	ClusterStatusActive      ClusterStatus = "active"
+	ClusterStatusOffline     ClusterStatus = "offline"
+	ClusterStatusDecommissioning ClusterStatus = "decommissioning"
+)
+
+// GetAllClusterStatuses возвращает все возможные статусы кластера
+func GetAllClusterStatuses() []ClusterStatus {
+	return []ClusterStatus{
+		ClusterStatusPlanned,
+		ClusterStatusStaging,
+		ClusterStatusActive,
+		ClusterStatusOffline,
+		ClusterStatusDecommissioning,
+	}
+}
+
+// Validate проверяет корректность статуса кластера
+func (s ClusterStatus) Validate() error {
+	switch s {
+	case ClusterStatusPlanned, ClusterStatusStaging, ClusterStatusActive,
+		ClusterStatusOffline, ClusterStatusDecommissioning:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// String возвращает строковое представление статуса кластера
+func (s ClusterStatus) String() string {
+	return string(s)
+}
+
+// Color возвращает цвет статуса кластера для UI
+func (s ClusterStatus) Color() string {
+	switch s {
+	case ClusterStatusPlanned:
+		return "#9e9e9e"
+	case ClusterStatusStaging:
+		return "#ff9800"
+	case ClusterStatusActive:
+		return "#4caf50"
+	case ClusterStatusOffline:
+		return "#f44336"
+	case ClusterStatusDecommissioning:
+		return "#ff9800"
+	default:
+		return "#9e9e9e"
+	}
+}
+
+// VirtualMachineStatus представляет статусы виртуальной машины
+type VirtualMachineStatus string
+
+const (
+	VirtualMachineStatusOffline      VirtualMachineStatus = "offline"
+	VirtualMachineStatusActive       VirtualMachineStatus = "active"
+	VirtualMachineStatusPlanned      VirtualMachineStatus = "planned"
+	VirtualMachineStatusStaged       VirtualMachineStatus = "staged"
+	VirtualMachineStatusFailed       VirtualMachineStatus = "failed"
+	VirtualMachineStatusDecommissioning VirtualMachineStatus = "decommissioning"
+)
+
+// GetAllVirtualMachineStatuses возвращает все возможные статусы VM
+func GetAllVirtualMachineStatuses() []VirtualMachineStatus {
+	return []VirtualMachineStatus{
+		VirtualMachineStatusOffline,
+		VirtualMachineStatusActive,
+		VirtualMachineStatusPlanned,
+		VirtualMachineStatusStaged,
+		VirtualMachineStatusFailed,
+		VirtualMachineStatusDecommissioning,
+	}
+}
+
+// Validate проверяет корректность статуса VM
+func (s VirtualMachineStatus) Validate() error {
+	switch s {
+	case VirtualMachineStatusOffline, VirtualMachineStatusActive,
+		VirtualMachineStatusPlanned, VirtualMachineStatusStaged,
+		VirtualMachineStatusFailed, VirtualMachineStatusDecommissioning:
+		return nil
+	default:
+		return types.ErrInvalidStatus
+	}
+}
+
+// String возвращает строковое представление статуса VM
+func (s VirtualMachineStatus) String() string {
+	return string(s)
+}
+
+// Color возвращает цвет статуса VM для UI
+func (s VirtualMachineStatus) Color() string {
+	switch s {
+	case VirtualMachineStatusOffline:
+		return "#f44336"
+	case VirtualMachineStatusActive:
+		return "#4caf50"
+	case VirtualMachineStatusPlanned:
+		return "#9e9e9e"
+	case VirtualMachineStatusStaged:
+		return "#2196f3"
+	case VirtualMachineStatusFailed:
+		return "#d32f2f"
+	case VirtualMachineStatusDecommissioning:
+		return "#ff9800"
+	default:
+		return "#9e9e9e"
+	}
+}
 
 // SiteStatus представляет статусы сайта
 type SiteStatus string
