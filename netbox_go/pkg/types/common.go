@@ -1,10 +1,36 @@
-// Package types содержит общие типы данных для всего приложения
+// Package types содержит общие типы данных и ошибки для всего приложения
 package types
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+// Ошибки валидации и бизнес-логики
+var (
+	ErrInvalidID          = errors.New("invalid ID")
+	ErrInvalidStatus      = errors.New("invalid status")
+	ErrInvalidSlug        = errors.New("invalid slug")
+	ErrInvalidLatitude    = errors.New("invalid latitude: must be between -90 and 90")
+	ErrInvalidLongitude   = errors.New("invalid longitude: must be between -180 and 180")
+	ErrNameRequired       = errors.New("name is required")
+	ErrDeviceNameRequired = errors.New("device name is required")
+	ErrDeviceModelRequired = errors.New("device model is required")
+	ErrManufacturerRequired = errors.New("manufacturer is required")
+	ErrPlatformNameRequired = errors.New("platform name is required")
+	ErrDeviceRoleNameRequired = errors.New("device role name is required")
+	ErrColorRequired      = errors.New("color is required")
+	ErrInvalidUHeight     = errors.New("invalid u_height: must be non-negative")
+	ErrDeviceTypeRequired = errors.New("device type is required")
+	ErrDeviceRoleRequired = errors.New("device role is required")
+	ErrSiteRequired       = errors.New("site is required")
+	ErrInvalidRackPosition = errors.New("invalid rack position")
+	ErrModuleModelRequired = errors.New("module model is required")
+	ErrModuleBayRequired  = errors.New("module bay is required")
+	ErrModuleTypeRequired = errors.New("module type is required")
+	ErrDeviceRequired     = errors.New("device is required")
 )
 
 // ID представляет идентификатор сущности
@@ -34,8 +60,8 @@ type Status string
 
 // TimeStamp представляет метки времени создания и обновления
 type TimeStamp struct {
-	Created   time.Time `json:"created"`
-	Updated   time.Time `json:"updated"`
+	Created   time.Time  `json:"created"`
+	Updated   time.Time  `json:"updated"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
@@ -68,32 +94,32 @@ type Comments string
 
 // Image представляет изображение
 type Image struct {
-	ID        ID       `json:"id"`
-	Name      string   `json:"name"`
-	Image     []byte   `json:"image"`
-	Uploaded  time.Time `json:"uploaded"`
-	UploadedBy *ID      `json:"uploaded_by,omitempty"`
+	ID         ID        `json:"id"`
+	Name       string    `json:"name"`
+	Image      []byte    `json:"image"`
+	Uploaded   time.Time `json:"uploaded"`
+	UploadedBy *ID       `json:"uploaded_by,omitempty"`
 }
 
 // Contact представляет контакт
 type Contact struct {
-	ID   ID   `json:"id"`
+	ID   ID     `json:"id"`
 	Name string `json:"name"`
 }
 
 // Tenant представляет арендатора
 type Tenant struct {
-	ID   ID   `json:"id"`
+	ID   ID     `json:"id"`
 	Name string `json:"name"`
-	Slug Slug `json:"slug"`
+	Slug Slug   `json:"slug"`
 }
 
 // ASN представляет автономную систему
 type ASN struct {
-	ID    ID    `json:"id"`
-	ASN   uint32 `json:"asn"`
-	Name  string `json:"name"`
-	Slug  Slug  `json:"slug"`
+	ID   ID     `json:"id"`
+	ASN  uint32 `json:"asn"`
+	Name string `json:"name"`
+	Slug Slug   `json:"slug"`
 }
 
 // Coordinate представляет GPS координаты
