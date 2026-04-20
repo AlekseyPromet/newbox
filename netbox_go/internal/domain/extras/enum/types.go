@@ -1,23 +1,30 @@
 // Package enum содержит перечисления для домена Extras
 package enum
 
+import "fmt"
+
 // CustomFieldType определяет типы пользовательских полей
 type CustomFieldType string
 
+// CustomFieldChoiceSetBaseChoices определяет типы пользовательских полей для выбора по умолчанию
+type CustomFieldChoiceSetBaseChoices bool
+
+var ErrInvalidCustomFieldType = fmt.Errorf("invalid custom field type")
+
 const (
-	CustomFieldTypeText         CustomFieldType = "text"
-	CustomFieldTypeLongText     CustomFieldType = "longtext"
-	CustomFieldTypeInteger      CustomFieldType = "integer"
-	CustomFieldTypeDecimal      CustomFieldType = "decimal"
-	CustomFieldTypeBoolean      CustomFieldType = "boolean"
-	CustomFieldTypeDate         CustomFieldType = "date"
-	CustomFieldTypeDateTime     CustomFieldType = "datetime"
-	CustomFieldTypeURL          CustomFieldType = "url"
-	CustomFieldTypeJSON         CustomFieldType = "json"
-	CustomFieldTypeSelect       CustomFieldType = "select"
-	CustomFieldTypeMultiSelect  CustomFieldType = "multiselect"
-	CustomFieldTypeObject       CustomFieldType = "object"
-	CustomFieldTypeMultiObject  CustomFieldType = "multiobject"
+	CustomFieldTypeText        CustomFieldType = "text"
+	CustomFieldTypeLongText    CustomFieldType = "longtext"
+	CustomFieldTypeInteger     CustomFieldType = "integer"
+	CustomFieldTypeDecimal     CustomFieldType = "decimal"
+	CustomFieldTypeBoolean     CustomFieldType = "boolean"
+	CustomFieldTypeDate        CustomFieldType = "date"
+	CustomFieldTypeDateTime    CustomFieldType = "datetime"
+	CustomFieldTypeURL         CustomFieldType = "url"
+	CustomFieldTypeJSON        CustomFieldType = "json"
+	CustomFieldTypeSelect      CustomFieldType = "select"
+	CustomFieldTypeMultiSelect CustomFieldType = "multiselect"
+	CustomFieldTypeObject      CustomFieldType = "object"
+	CustomFieldTypeMultiObject CustomFieldType = "multiobject"
 )
 
 // Validate проверяает корректность типа поля
@@ -67,8 +74,8 @@ const (
 type EventRuleActionType string
 
 const (
-	EventRuleActionWebhook     EventRuleActionType = "webhook"
-	EventRuleActionScript      EventRuleActionType = "script"
+	EventRuleActionWebhook      EventRuleActionType = "webhook"
+	EventRuleActionScript       EventRuleActionType = "script"
 	EventRuleActionNotification EventRuleActionType = "notification"
 )
 
@@ -86,8 +93,8 @@ const (
 type BookmarkOrdering string
 
 const (
-	BookmarkOrderingNewest        BookmarkOrdering = "-created"
-	BookmarkOrderingOldest        BookmarkOrdering = "created"
+	BookmarkOrderingNewest         BookmarkOrdering = "-created"
+	BookmarkOrderingOldest         BookmarkOrdering = "created"
 	BookmarkOrderingAlphabeticalAZ BookmarkOrdering = "name"
 	BookmarkOrderingAlphabeticalZA BookmarkOrdering = "-name"
 )
