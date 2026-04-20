@@ -2,12 +2,16 @@
 package repository
 
 import (
-	"context"
+    "context"
+    "time"
 
-	account_entity "github.com/AlekseyPromet/netbox_go/internal/domain/account/entity"
-	dcim_entity "github.com/AlekseyPromet/netbox_go/internal/domain/dcim/entity"
-	extras_entity "github.com/AlekseyPromet/netbox_go/internal/domain/extras/entity"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+    account_entity "github.com/AlekseyPromet/netbox_go/internal/domain/account/entity"
+    core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
+    dcim_entity "github.com/AlekseyPromet/netbox_go/internal/domain/dcim/entity"
+    extras_entity "github.com/AlekseyPromet/netbox_go/internal/domain/extras/entity"
+    "github.com/AlekseyPromet/netbox_go/pkg/types"
+
+    circuits_entity "github.com/AlekseyPromet/netbox_go/internal/domain/circuits/entity"
 )
 
 // SiteRepository определяет интерфейс для работы с сайтами
@@ -166,4 +170,260 @@ type DashboardRepository interface {
 	Create(ctx context.Context, dashboard *extras_entity.Dashboard) error
 	Update(ctx context.Context, dashboard *extras_entity.Dashboard) error
 	Delete(ctx context.Context, id int64) error
+}
+
+// ProviderFilter задает параметры фильтрации провайдеров
+type ProviderFilter struct {
+	Name   *string
+	Slug   *string
+	Tenant *string
+	Limit  int
+	Offset int
+}
+
+// ProviderRepository операции над провайдерами
+type ProviderRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.Provider, error)
+	List(ctx context.Context, filter ProviderFilter) ([]*circuits_entity.Provider, int64, error)
+	Create(ctx context.Context, provider *circuits_entity.Provider) error
+	Update(ctx context.Context, provider *circuits_entity.Provider) error
+	Delete(ctx context.Context, id string) error
+}
+
+// ProviderAccountFilter фильтр аккаунтов провайдера
+type ProviderAccountFilter struct {
+	ProviderID *string
+	Account    *string
+	Limit      int
+	Offset     int
+}
+
+// ProviderAccountRepository операции над аккаунтами провайдеров
+type ProviderAccountRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.ProviderAccount, error)
+	List(ctx context.Context, filter ProviderAccountFilter) ([]*circuits_entity.ProviderAccount, int64, error)
+	Create(ctx context.Context, account *circuits_entity.ProviderAccount) error
+	Update(ctx context.Context, account *circuits_entity.ProviderAccount) error
+	Delete(ctx context.Context, id string) error
+}
+
+// ProviderNetworkFilter фильтр сетей провайдера
+type ProviderNetworkFilter struct {
+	ProviderID *string
+	Name       *string
+	Limit      int
+	Offset     int
+}
+
+// ProviderNetworkRepository операции над сетями провайдера
+type ProviderNetworkRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.ProviderNetwork, error)
+	List(ctx context.Context, filter ProviderNetworkFilter) ([]*circuits_entity.ProviderNetwork, int64, error)
+	Create(ctx context.Context, network *circuits_entity.ProviderNetwork) error
+	Update(ctx context.Context, network *circuits_entity.ProviderNetwork) error
+	Delete(ctx context.Context, id string) error
+}
+
+// CircuitTypeFilter фильтр типов цепей
+type CircuitTypeFilter struct {
+	Slug  *string
+	Name  *string
+	Limit int
+	Offset int
+}
+
+// CircuitTypeRepository операции над типами цепей
+type CircuitTypeRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.CircuitType, error)
+	List(ctx context.Context, filter CircuitTypeFilter) ([]*circuits_entity.CircuitType, int64, error)
+	Create(ctx context.Context, ct *circuits_entity.CircuitType) error
+	Update(ctx context.Context, ct *circuits_entity.CircuitType) error
+	Delete(ctx context.Context, id string) error
+}
+
+// CircuitFilter задает параметры фильтрации цепей
+type CircuitFilter struct {
+	ProviderID *string
+	TypeID     *string
+	Status     *string
+	TenantID   *string
+	Limit      int
+	Offset     int
+}
+
+// CircuitRepository определяет операции над цепями
+type CircuitRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.Circuit, error)
+	List(ctx context.Context, filter CircuitFilter) ([]*circuits_entity.Circuit, int64, error)
+	Create(ctx context.Context, circuit *circuits_entity.Circuit) error
+	Update(ctx context.Context, circuit *circuits_entity.Circuit) error
+	Delete(ctx context.Context, id string) error
+}
+
+// CircuitTerminationRepository определяет операции над точками завершения цепей
+type CircuitTerminationRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.CircuitTermination, error)
+	ListByCircuit(ctx context.Context, circuitID string) ([]*circuits_entity.CircuitTermination, error)
+	Create(ctx context.Context, termination *circuits_entity.CircuitTermination) error
+	Update(ctx context.Context, termination *circuits_entity.CircuitTermination) error
+	Delete(ctx context.Context, id string) error
+}
+
+// CircuitGroupFilter фильтр групп цепей
+type CircuitGroupFilter struct {
+	TenantID *string
+	Name     *string
+	Limit    int
+	Offset   int
+}
+
+// CircuitGroupRepository операции над группами цепей
+type CircuitGroupRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.CircuitGroup, error)
+	List(ctx context.Context, filter CircuitGroupFilter) ([]*circuits_entity.CircuitGroup, int64, error)
+	Create(ctx context.Context, group *circuits_entity.CircuitGroup) error
+	Update(ctx context.Context, group *circuits_entity.CircuitGroup) error
+	Delete(ctx context.Context, id string) error
+}
+
+// CircuitGroupAssignmentFilter фильтр назначений в группы
+type CircuitGroupAssignmentFilter struct {
+	GroupID     *string
+	MemberType  *string
+	MemberID    *string
+	Priority    *string
+	Limit       int
+	Offset      int
+}
+
+// CircuitGroupAssignmentRepository операции над назначениями групп
+type CircuitGroupAssignmentRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.CircuitGroupAssignment, error)
+	List(ctx context.Context, filter CircuitGroupAssignmentFilter) ([]*circuits_entity.CircuitGroupAssignment, int64, error)
+	Create(ctx context.Context, assignment *circuits_entity.CircuitGroupAssignment) error
+	Update(ctx context.Context, assignment *circuits_entity.CircuitGroupAssignment) error
+	Delete(ctx context.Context, id string) error
+}
+
+// VirtualCircuitTypeFilter фильтр типов виртуальных цепей
+type VirtualCircuitTypeFilter struct {
+	Slug  *string
+	Name  *string
+	Limit int
+	Offset int
+}
+
+// VirtualCircuitTypeRepository операции над типами виртуальных цепей
+type VirtualCircuitTypeRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.VirtualCircuitType, error)
+	List(ctx context.Context, filter VirtualCircuitTypeFilter) ([]*circuits_entity.VirtualCircuitType, int64, error)
+	Create(ctx context.Context, vct *circuits_entity.VirtualCircuitType) error
+	Update(ctx context.Context, vct *circuits_entity.VirtualCircuitType) error
+	Delete(ctx context.Context, id string) error
+}
+
+// VirtualCircuitFilter фильтр виртуальных цепей
+type VirtualCircuitFilter struct {
+	ProviderNetworkID *string
+	TypeID            *string
+	Status            *string
+	TenantID          *string
+	Limit             int
+	Offset            int
+}
+
+// VirtualCircuitRepository операции над виртуальными цепями
+type VirtualCircuitRepository interface {
+	GetByID(ctx context.Context, id string) (*circuits_entity.VirtualCircuit, error)
+	List(ctx context.Context, filter VirtualCircuitFilter) ([]*circuits_entity.VirtualCircuit, int64, error)
+	Create(ctx context.Context, vc *circuits_entity.VirtualCircuit) error
+	Update(ctx context.Context, vc *circuits_entity.VirtualCircuit) error
+	Delete(ctx context.Context, id string) error
+}
+
+// VirtualCircuitTerminationRepository операции над точками завершения виртуальных цепей
+type VirtualCircuitTerminationRepository interface {
+    GetByID(ctx context.Context, id string) (*circuits_entity.VirtualCircuitTermination, error)
+    ListByVirtualCircuit(ctx context.Context, virtualCircuitID string) ([]*circuits_entity.VirtualCircuitTermination, error)
+    Create(ctx context.Context, termination *circuits_entity.VirtualCircuitTermination) error
+    Update(ctx context.Context, termination *circuits_entity.VirtualCircuitTermination) error
+    Delete(ctx context.Context, id string) error
+}
+
+// ObjectTypeFilter фильтр типов объектов
+type ObjectTypeFilter struct {
+    AppLabel *string
+    Model    *string
+    Public   *bool
+    Feature  *string
+    Limit    int
+    Offset   int
+}
+
+// ObjectTypeRepository операции над типами объектов
+type ObjectTypeRepository interface {
+    GetByID(ctx context.Context, id string) (*core_entity.ObjectType, error)
+    List(ctx context.Context, filter ObjectTypeFilter) ([]*core_entity.ObjectType, int64, error)
+    Create(ctx context.Context, ot *core_entity.ObjectType) error
+    Update(ctx context.Context, ot *core_entity.ObjectType) error
+    Delete(ctx context.Context, id string) error
+}
+
+// ObjectChangeFilter фильтр записей журнала изменений
+type ObjectChangeFilter struct {
+    ChangedObjectType *string
+    ChangedObjectID   *string
+    UserID            *string
+    Action            *string
+    RequestID         *string
+    Since             *time.Time
+    Until             *time.Time
+    Limit             int
+    Offset            int
+}
+
+// ObjectChangeRepository операции над журналом изменений
+type ObjectChangeRepository interface {
+    GetByID(ctx context.Context, id string) (*core_entity.ObjectChange, error)
+    List(ctx context.Context, filter ObjectChangeFilter) ([]*core_entity.ObjectChange, int64, error)
+    Create(ctx context.Context, change *core_entity.ObjectChange) error
+}
+
+// ObjectTypeFilter фильтр типов объектов
+type ObjectTypeFilter struct {
+	AppLabel *string
+	Model    *string
+	Public   *bool
+	Feature  *string
+	Limit    int
+	Offset   int
+}
+
+// ObjectTypeRepository операции над типами объектов
+type ObjectTypeRepository interface {
+	GetByID(ctx context.Context, id string) (*core_entity.ObjectType, error)
+	List(ctx context.Context, filter ObjectTypeFilter) ([]*core_entity.ObjectType, int64, error)
+	Create(ctx context.Context, ot *core_entity.ObjectType) error
+	Update(ctx context.Context, ot *core_entity.ObjectType) error
+	Delete(ctx context.Context, id string) error
+}
+
+// ObjectChangeFilter фильтр записей журнала изменений
+type ObjectChangeFilter struct {
+	ChangedObjectType *string
+	ChangedObjectID   *string
+	UserID            *string
+	Action            *string
+	RequestID         *string
+	Since             *time.Time
+	Until             *time.Time
+	Limit             int
+	Offset            int
+}
+
+// ObjectChangeRepository операции над журналом изменений
+type ObjectChangeRepository interface {
+	GetByID(ctx context.Context, id string) (*core_entity.ObjectChange, error)
+	List(ctx context.Context, filter ObjectChangeFilter) ([]*core_entity.ObjectChange, int64, error)
+	Create(ctx context.Context, change *core_entity.ObjectChange) error
 }
