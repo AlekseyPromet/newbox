@@ -14,6 +14,7 @@ var (
 	ErrPermissionDenied    = errors.New("permission denied")
 	ErrInvalidOperation    = errors.New("invalid operation")
 	ErrConstraintViolation = errors.New("constraint violation")
+	ErrDashboardNotFound   = errors.New("dashboard not found")
 )
 
 // ValidationError представляет ошибку валидации поля
