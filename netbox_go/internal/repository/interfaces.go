@@ -4,8 +4,10 @@ package repository
 import (
 	"context"
 
+	account_entity "github.com/AlekseyPromet/netbox_go/internal/domain/account/entity"
 	dcim_entity "github.com/AlekseyPromet/netbox_go/internal/domain/dcim/entity"
 	extras_entity "github.com/AlekseyPromet/netbox_go/internal/domain/extras/entity"
+	"github.com/AlekseyPromet/netbox_go/pkg/types"
 )
 
 // SiteRepository определяет интерфейс для работы с сайтами
@@ -71,6 +73,38 @@ type DeviceFilter struct {
 	PlatformID *string
 	Limit      int
 	Offset     int
+}
+
+// UserTokenRepository определяет интерфейс управления API-токенами пользователя
+// Операции ограничены пользователем (scoped)
+type UserTokenRepository interface {
+	ListByUser(ctx context.Context, userID types.ID) ([]*account_entity.UserToken, error)
+	Get(ctx context.Context, id types.ID, userID types.ID) (*account_entity.UserToken, error)
+	Create(ctx context.Context, token *account_entity.UserToken) error
+	Update(ctx context.Context, token *account_entity.UserToken) error
+	Delete(ctx context.Context, id types.ID, userID types.ID) error
+}
+
+// BookmarkRepository определяет интерфейс для закладок пользователя
+// В упрощённой модели используем только закладки текущего пользователя
+type BookmarkRepository interface {
+	ListBookmarksByUser(ctx context.Context, userID types.ID) ([]*account_entity.Bookmark, error)
+}
+
+// NotificationRepository определяет интерфейс для уведомлений пользователя
+type NotificationRepository interface {
+	ListNotificationsByUser(ctx context.Context, userID types.ID) ([]*account_entity.Notification, error)
+}
+
+// SubscriptionRepository определяет интерфейс для подписок пользователя
+type SubscriptionRepository interface {
+	ListSubscriptionsByUser(ctx context.Context, userID types.ID) ([]*account_entity.Subscription, error)
+}
+
+// UserConfigRepository определяет интерфейс для пользовательских настроек
+type UserConfigRepository interface {
+	GetByUser(ctx context.Context, userID types.ID) (*account_entity.UserConfig, error)
+	Upsert(ctx context.Context, config *account_entity.UserConfig) error
 }
 
 // CableRepository определяет интерфейс для работы с кабелями

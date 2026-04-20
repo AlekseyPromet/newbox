@@ -16,6 +16,7 @@ import (
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 
 	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/handlers"
+	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/middleware"
 	"github.com/AlekseyPromet/netbox_go/internal/repository/postgres"
 )
 
@@ -29,9 +30,13 @@ func main() {
 
 	// Создание репозиториев
 	siteRepo := postgres.NewSiteRepositoryPostgres(db)
+	accountRepo := postgres.NewAccountRepositoryPostgres(db)
 
 	// Создание обработчиков
 	siteHandler := handlers.NewSiteHandler(siteRepo)
+	accountHandler := handlers.NewAccountHandler(
+		accountRepo, accountRepo, accountRepo, accountRepo, accountRepo,
+	)
 
 	// Инициализация Echo
 	e := echo.New()
@@ -50,7 +55,7 @@ func main() {
 	// API Routes - DCIM
 	api := e.Group("/api")
 	dcim := api.Group("/dcim")
-	
+
 	sites := dcim.Group("/sites")
 	sites.GET("", siteHandler.List)
 	sites.GET("/:id", siteHandler.GetByID)
@@ -59,13 +64,28 @@ func main() {
 	sites.PUT("/:id", siteHandler.Update)
 	sites.DELETE("/:id", siteHandler.Delete)
 
+	account := api.Group("/account", middleware.KerberosSSOMiddleware())
+	account.GET("/profile", accountHandler.Profile)
+	account.GET("/bookmarks", accountHandler.ListBookmarks)
+	account.GET("/notifications", accountHandler.ListNotifications)
+	account.GET("/subscriptions", accountHandler.ListSubscriptions)
+	account.GET("/preferences", accountHandler.GetPreferences)
+	account.POST("/preferences", accountHandler.UpsertPreferences)
+
+	tokens := account.Group("/api-tokens")
+	tokens.GET("", accountHandler.ListTokens)
+	tokens.GET("/:id", accountHandler.GetToken)
+	tokens.POST("", accountHandler.CreateToken)
+	tokens.PUT("/:id", accountHandler.UpdateToken)
+	tokens.DELETE("/:id", accountHandler.DeleteToken)
+
 	// Запуск сервера
 	go func() {
 		port := os.Getenv("PORT")
 		if port == "" {
 			port = "8080"
 		}
-		
+
 		log.Printf("Starting HTTP server on port %s", port)
 		if err := e.Start(":" + port); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("HTTP server failed: %v", err)
