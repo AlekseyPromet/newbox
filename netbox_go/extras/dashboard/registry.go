@@ -2,7 +2,7 @@
 package dashboard
 
 import (
-	"github.com/netbox-go/extras/dashboard/widgets"
+	"github.com/AlekseyPromet/netbox_go/extras/dashboard/widgets"
 )
 
 // WidgetRegistry реестр зарегистрированных виджетов
