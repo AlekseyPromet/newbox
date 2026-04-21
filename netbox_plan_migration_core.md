@@ -47,89 +47,132 @@
 
 ## План миграции
 
-### Этап 1: Анализ исходного кода Python
+### Этап 1: Анализ исходного кода Python ✅ (100%)
 
-#### 1.1 Модели данных (`netbox/core/models/`)
+#### 1.1 Модели данных (`netbox/core/models/`) ✅
 
-| Модель | Файл | Описание | Приоритет |
-|--------|------|----------|-----------|
-| `ObjectType` | `object_types.py` | Обёртка над ContentType | Высокий |
-| `ObjectChange` | `change_logging.py` | Журнал изменений | Высокий |
-| `DataSource` | `data.py` | Источники данных | Высокий |
-| `DataFile` | `data.py` | Файлы данных | Высокий |
-| `AutoSyncRecord` | `data.py` | Авто-синхронизация | Средний |
-| `Job` | `jobs.py` | Фоновые задачи | Высокий |
-| `ConfigRevision` | `config.py` | Ревизии конфига | Средний |
-| `ManagedFile` | `files.py` | Управляемые файлы | Средний |
+| Модель | Файл | Описание | Приоритет | Статус |
+|--------|------|----------|-----------|--------|
+| `ObjectType` | `object_types.py` | Обёртка над ContentType | Высокий | ✅ Реализовано |
+| `ObjectChange` | `change_logging.py` | Журнал изменений | Высокий | ✅ Реализовано |
+| `DataSource` | `data.py` | Источники данных | Высокий | ✅ Реализовано |
+| `DataFile` | `data.py` | Файлы данных | Высокий | ✅ Реализовано |
+| `AutoSyncRecord` | `data.py` | Авто-синхронизация | Средний | ⏳ Не реализовано (4ч) |
+| `Job` | `jobs.py` | Фоновые задачи | Высокий | ✅ Реализовано |
+| `ConfigRevision` | `config.py` | Ревизии конфига | Средний | ✅ Реализовано |
+| `ManagedFile` | `files.py` | Управляемые файлы | Средний | ⏳ Не реализовано (4ч) |
 
-#### 1.2 API ViewSets (`netbox/core/api/views.py`)
+#### 1.2 API ViewSets (`netbox/core/api/views.py`) ✅ (85%)
 
-| Endpoint | Методы | Описание |
-|----------|--------|----------|
-| `/api/core/data-sources/` | GET, POST | Список/создание источников |
-| `/api/core/data-sources/:id/` | GET, PUT, DELETE | Операции с источником |
-| `/api/core/data-sources/:id/sync/` | POST | Синхронизация источника |
-| `/api/core/data-files/` | GET | Список файлов |
-| `/api/core/data-files/:id/` | GET | Детали файла |
-| `/api/core/jobs/` | GET | Список задач |
-| `/api/core/jobs/:id/` | GET | Детали задачи |
-| `/api/core/object-changes/` | GET | Список изменений |
-| `/api/core/object-changes/:id/` | GET | Детали изменения |
-| `/api/core/object-types/` | GET | Список типов объектов |
-| `/api/core/object-types/:id/` | GET | Детали типа |
-| `/api/core/background-queues/` | GET | Очереди RQ |
-| `/api/core/background-workers/` | GET | Воркеры RQ |
-| `/api/core/background-tasks/` | GET, POST | Задачи RQ |
+| Endpoint | Методы | Описание | Статус |
+|----------|--------|----------|--------|
+| `/api/core/data-sources/` | GET, POST | Список/создание источников | ✅ Реализовано |
+| `/api/core/data-sources/:id/` | GET, PUT, DELETE | Операции с источником | ✅ Реализовано |
+| `/api/core/data-sources/:id/sync/` | POST | Синхронизация источника | ⏳ Не реализовано (2ч) |
+| `/api/core/data-files/` | GET | Список файлов | ✅ Реализовано |
+| `/api/core/data-files/:id/` | GET | Детали файла | ✅ Реализовано |
+| `/api/core/data-files/` | POST | Создание файла | ⏳ Не реализовано (2ч) |
+| `/api/core/data-files/:id/` | PUT, DELETE | Обновление/удаление файла | ⏳ Не реализовано (2ч) |
+| `/api/core/jobs/` | GET | Список задач | ✅ Реализовано |
+| `/api/core/jobs/:id/` | GET | Детали задачи | ✅ Реализовано |
+| `/api/core/jobs/` | POST | Создание задачи | ⏳ Не реализовано (3ч) |
+| `/api/core/object-changes/` | GET | Список изменений | ✅ Реализовано |
+| `/api/core/object-changes/:id/` | GET | Детали изменения | ✅ Реализовано |
+| `/api/core/object-changes/log` | POST | Логирование изменения | ⏳ Не реализовано (2ч) |
+| `/api/core/object-types/` | GET | Список типов объектов | ✅ Реализовано |
+| `/api/core/object-types/:id/` | GET | Детали типа | ✅ Реализовано |
+| `/api/core/config-revisions/active` | GET | Активная ревизия | ⏳ Не реализовано (2ч) |
+| `/api/core/config-revisions/:id/activate` | POST | Активация ревизии | ⏳ Не реализовано (2ч) |
+| `/api/core/background-*` | GET | RQ заглушки | ✅ Заглушки реализованы |
 
-#### 1.3 Выборы (choices) (`netbox/core/choices.py`)
+#### 1.3 Выборы (choices) (`netbox/core/choices.py`) ✅ (100%)
 
-```python
-# DataSourceStatusChoices
-NEW = 'new'
-QUEUED = 'queued'
-SYNCING = 'syncing'
-COMPLETED = 'completed'
-FAILED = 'failed'
+Все перечисления реализованы в `internal/domain/core/enum/status.go`:
+- ✅ DataSourceStatusChoices
+- ✅ JobStatusChoices
+- ✅ JobIntervalChoices
+- ✅ ObjectChangeActionChoices
+- ✅ ManagedFileRootPathChoices
 
-# JobStatusChoices
-STATUS_PENDING = 'pending'
-STATUS_SCHEDULED = 'scheduled'
-STATUS_RUNNING = 'running'
-STATUS_COMPLETED = 'completed'
-STATUS_ERRORED = 'errored'
-STATUS_FAILED = 'failed'
+#### 1.4 Фильтры (`netbox/core/filtersets.py`) ✅ (90%)
 
-# JobIntervalChoices
-INTERVAL_MINUTELY = 1
-INTERVAL_HOURLY = 60
-INTERVAL_DAILY = 60 * 24
-INTERVAL_WEEKLY = 60 * 24 * 7
-
-# ObjectChangeActionChoices
-ACTION_CREATE = 'create'
-ACTION_UPDATE = 'update'
-ACTION_DELETE = 'delete'
-
-# ManagedFileRootPathChoices
-SCRIPTS = 'scripts'
-REPORTS = 'reports'
-```
-
-#### 1.4 Фильтры (`netbox/core/filtersets.py`)
-
-| Фильтр | Сущность | Поля фильтрации |
-|--------|----------|-----------------|
-| `DataSourceFilterSet` | DataSource | name, type, status, enabled, sync_interval |
-| `DataFileFilterSet` | DataFile | source_id, path, hash |
-| `JobFilterSet` | Job | object_type, object_id, status, queue_name |
-| `ObjectChangeFilterSet` | ObjectChange | changed_object_type, user_id, action, request_id |
-| `ObjectTypeFilterSet` | ObjectType | app_label, model, public, feature |
+| Фильтр | Сущность | Поля фильтрации | Статус |
+|--------|----------|-----------------|--------|
+| `DataSourceFilterSet` | DataSource | name, type, status, enabled, sync_interval | ✅ Реализовано |
+| `DataFileFilterSet` | DataFile | source_id, path, hash | ⏳ Частично (2ч) |
+| `JobFilterSet` | Job | object_type, object_id, status, queue_name | ✅ Реализовано |
+| `ObjectChangeFilterSet` | ObjectChange | changed_object_type, user_id, action, request_id | ✅ Реализовано |
+| `ObjectTypeFilterSet` | ObjectType | app_label, model, public, feature | ✅ Реализовано |
 
 ---
 
-### Этап 2: Реализация интерфейсов репозиториев
+### Этап 2: Реализация интерфейсов репозиториев ✅ (100%)
 
-#### 2.1 Добавить интерфейсы в `internal/repository/interfaces.go`
+#### 2.1 Интерфейсы в `internal/repository/interfaces.go` ✅
+
+Все интерфейсы реализованы:
+- ✅ `DataSourceRepository` — все методы включая Sync(), Exists(), GetByName()
+- ✅ `DataFileRepository` — все методы включая BulkCreate(), BulkUpdate(), BulkDelete()
+- ✅ `JobRepository` — все методы включая Start(), Complete(), Log()
+- ✅ `ObjectChangeRepository` — все методы включая GetChangesForObject()
+- ✅ `ObjectTypeRepository` — все методы включая GetByAppAndModel(), GetForModel(), Public(), WithFeature()
+- ✅ `ConfigRevisionRepository` — все методы включая GetActive(), GetLatest()
+
+**Оценка этапа:** 100% завершено
+
+---
+
+### Этап 3: Реализация PostgreSQL репозиториев ✅ (100%)
+
+#### 3.1 Файлы репозиториев ✅
+
+Все 6 репозиториев реализованы в `internal/repository/postgres/`:
+
+1. ✅ **`data_source_repository.go`** (10717 байт)
+   - Методы CRUD: GetByID, List, Create, Update, Delete
+   - Метод `Sync()` для запуска синхронизации
+   - Метод `Exists()` для проверки существования
+   - Метод `GetByName()` для поиска по имени
+   - Поддержка фильтрации
+
+2. ✅ **`data_file_repository.go`** (9147 байт)
+   - Методы CRUD: GetByID, List, Create, Update, Delete
+   - Методы bulk-операций: BulkCreate(), BulkUpdate(), BulkDelete()
+   - Метод `GetBySourceAndPath()`
+
+3. ✅ **`job_repository.go`** (13001 байт)
+   - Методы CRUD: GetByID, List, Create, Update, Delete
+   - Интеграция с EtcdQueue: Start(), Complete(), Log()
+   - Логирование выполнения задач
+
+4. ✅ **`object_change_repository.go`** (10951 байт)
+   - Методы записи изменений: Create()
+   - Методы чтения истории: List(), GetChangesForObject()
+   - Оптимизированные запросы для GIN индексов
+
+5. ✅ **`object_type_repository.go`** (9045 байт)
+   - Кэширование результатов (etcd)
+   - Метод `GetForModel()` с авто-созданием
+   - Фильтрация по features (PostgreSQL JSONB)
+   - Методы: GetByAppAndModel(), Public(), WithFeature()
+
+6. ✅ **`config_revision_repository.go`** (7881 байт)
+   - Метод активации ревизии: Activate()
+   - Получение активной ревизии: GetActive()
+   - Получение последней ревизии: GetLatest()
+   - Валидация уникальности активной ревизии
+
+#### 3.2 SQL запросы через sqlc ✅
+
+Файл `internal/infrastructure/storage/sqlc/core/queries.sql` (15851 байт):
+- ✅ Все запросы для DataSource
+- ✅ Все запросы для DataFile включая BulkInsert
+- ✅ Все запросы для Job
+- ✅ Все запросы для ObjectChange
+- ✅ Все запросы для ObjectType
+- ✅ Все запросы для ConfigRevision
+
+**Оценка этапа:** 100% завершено
 
 ```go
 // DataSourceRepository определяет интерфейс для работы с источниками данных
@@ -420,117 +463,48 @@ UPDATE core_configrevision SET active = true WHERE id = $1;
 
 ---
 
-### Этап 4: Расширение HTTP обработчиков
+### Этап 4: Расширение HTTP обработчиков ⏳ (35%)
 
-#### 4.1 Обновить `internal/delivery/http/handlers/core_handler.go`
+#### 4.1 Обновить `internal/delivery/http/handlers/core_handler.go` ⏳
 
-Добавить следующие методы:
+**Реализованные методы (8 из 15):**
+- ✅ `ListDataSources()` — GET /api/core/data-sources
+- ✅ `GetDataSource()` — GET /api/core/data-sources/:id
+- ✅ `CreateDataSource()` — POST /api/core/data-sources
+- ✅ `UpdateDataSource()` — PUT /api/core/data-sources/:id
+- ✅ `DeleteDataSource()` — DELETE /api/core/data-sources/:id
+- ✅ `ListDataFiles()` — GET /api/core/data-files
+- ✅ `GetDataFile()` — GET /api/core/data-files/:id
+- ✅ `ListJobs()` — GET /api/core/jobs
+- ✅ `GetJob()` — GET /api/core/jobs/:id
+- ✅ `ListObjectChanges()` — GET /api/core/object-changes
+- ✅ `GetObjectChange()` — GET /api/core/object-changes/:id
+- ✅ `ListObjectTypes()` — GET /api/core/object-types
+- ✅ `GetObjectType()` — GET /api/core/object-types/:id
+- ✅ Заглушки Background (8 методов)
 
-```go
-// SyncDataSource обрабатывает POST /api/core/data-sources/:id/sync
-func (h *CoreHandlers) SyncDataSource(c echo.Context) error {
-    id := c.Param("id")
-    if err := h.dataSources.Sync(c.Request().Context(), id); err != nil {
-        return handleError(err)
-    }
-    return c.JSON(http.StatusOK, map[string]string{"status": "sync initiated"})
-}
+**Требуется реализовать (7 методов):**
+- ⏳ `SyncDataSource()` — POST /api/core/data-sources/:id/sync (2ч)
+- ⏳ `CreateDataFile()` — POST /api/core/data-files (2ч)
+- ⏳ `UpdateDataFile()` — PUT /api/core/data-files/:id (2ч)
+- ⏳ `DeleteDataFile()` — DELETE /api/core/data-files/:id (1ч)
+- ⏳ `CreateJob()` — POST /api/core/jobs (3ч)
+- ⏳ `LogObjectChange()` — POST /api/core/object-changes/log (2ч)
+- ⏳ `GetActiveConfigRevision()` — GET /api/core/config-revisions/active (2ч)
+- ⏳ `ActivateConfigRevision()` — POST /api/core/config-revisions/:id/activate (2ч)
 
-// CreateDataFile обрабатывает POST /api/core/data-files
-func (h *CoreHandlers) CreateDataFile(c echo.Context) error {
-    // Реализация создания файла данных
-}
+**Оценка этапа:** 35% завершено (8/15 методов + заглушки)
 
-// UpdateDataFile обрабатывает PUT /api/core/data-files/:id
-func (h *CoreHandlers) UpdateDataFile(c echo.Context) error {
-    // Реализация обновления файла данных
-}
+#### 4.2 Регистрация маршрутов ⏳
 
-// DeleteDataFile обрабатывает DELETE /api/core/data-files/:id
-func (h *CoreHandlers) DeleteDataFile(c echo.Context) error {
-    id := c.Param("id")
-    if err := h.dataFiles.Delete(c.Request().Context(), id); err != nil {
-        return handleError(err)
-    }
-    return c.NoContent(http.StatusNoContent)
-}
+Требуется обновить роутер в `cmd/api/main.go`:
+- ⏳ Добавить маршрут POST `/data-sources/:id/sync` (1ч)
+- ⏳ Добавить маршруты для Data Files (POST, PUT, DELETE) (1ч)
+- ⏳ Добавить маршрут POST `/jobs` (1ч)
+- ⏳ Добавить маршрут POST `/object-changes/log` (1ч)
+- ⏳ Добавить маршруты для Config Revisions (2ч)
 
-// CreateJob обрабатывает POST /api/core/jobs
-func (h *CoreHandlers) CreateJob(c echo.Context) error {
-    // Создание новой задачи
-}
-
-// LogObjectChange обрабатывает POST /api/core/object-changes/log
-func (h *CoreHandlers) LogObjectChange(c echo.Context) error {
-    // Логирование изменения объекта
-}
-
-// GetActiveConfigRevision обрабатывает GET /api/core/config-revisions/active
-func (h *CoreHandlers) GetActiveConfigRevision(c echo.Context) error {
-    // Получение активной ревизии конфигурации
-}
-
-// ActivateConfigRevision обрабатывает POST /api/core/config-revisions/:id/activate
-func (h *CoreHandlers) ActivateConfigRevision(c echo.Context) error {
-    id := c.Param("id")
-    // Активация ревизии
-}
-```
-
-#### 4.2 Регистрация маршрутов
-
-Обновить роутер в `cmd/api/main.go`:
-
-```go
-// Core API routes
-coreGroup := api.Group("/core")
-{
-    // Data Sources
-    coreGroup.GET("/data-sources", coreHandlers.ListDataSources)
-    coreGroup.GET("/data-sources/:id", coreHandlers.GetDataSource)
-    coreGroup.POST("/data-sources", coreHandlers.CreateDataSource)
-    coreGroup.PUT("/data-sources/:id", coreHandlers.UpdateDataSource)
-    coreGroup.DELETE("/data-sources/:id", coreHandlers.DeleteDataSource)
-    coreGroup.POST("/data-sources/:id/sync", coreHandlers.SyncDataSource)
-    
-    // Data Files
-    coreGroup.GET("/data-files", coreHandlers.ListDataFiles)
-    coreGroup.GET("/data-files/:id", coreHandlers.GetDataFile)
-    coreGroup.POST("/data-files", coreHandlers.CreateDataFile)
-    coreGroup.PUT("/data-files/:id", coreHandlers.UpdateDataFile)
-    coreGroup.DELETE("/data-files/:id", coreHandlers.DeleteDataFile)
-    
-    // Jobs
-    coreGroup.GET("/jobs", coreHandlers.ListJobs)
-    coreGroup.GET("/jobs/:id", coreHandlers.GetJob)
-    coreGroup.POST("/jobs", coreHandlers.CreateJob)
-    
-    // Object Changes
-    coreGroup.GET("/object-changes", coreHandlers.ListObjectChanges)
-    coreGroup.GET("/object-changes/:id", coreHandlers.GetObjectChange)
-    coreGroup.POST("/object-changes/log", coreHandlers.LogObjectChange)
-    
-    // Object Types
-    coreGroup.GET("/object-types", coreHandlers.ListObjectTypes)
-    coreGroup.GET("/object-types/:id", coreHandlers.GetObjectType)
-    
-    // Config Revisions
-    coreGroup.GET("/config-revisions/active", coreHandlers.GetActiveConfigRevision)
-    coreGroup.POST("/config-revisions/:id/activate", coreHandlers.ActivateConfigRevision)
-    
-    // Background (RQ) - заглушки
-    coreGroup.GET("/background-queues", coreHandlers.ListBackgroundQueues)
-    coreGroup.GET("/background-queues/:name", coreHandlers.GetBackgroundQueue)
-    coreGroup.GET("/background-workers", coreHandlers.ListBackgroundWorkers)
-    coreGroup.GET("/background-workers/:name", coreHandlers.GetBackgroundWorker)
-    coreGroup.GET("/background-tasks", coreHandlers.ListBackgroundTasks)
-    coreGroup.GET("/background-tasks/:id", coreHandlers.GetBackgroundTask)
-    coreGroup.POST("/background-tasks/:id/delete", coreHandlers.DeleteBackgroundTask)
-    coreGroup.POST("/background-tasks/:id/requeue", coreHandlers.RequeueBackgroundTask)
-    coreGroup.POST("/background-tasks/:id/enqueue", coreHandlers.EnqueueBackgroundTask)
-    coreGroup.POST("/background-tasks/:id/stop", coreHandlers.StopBackgroundTask)
-}
-```
+**Оценка этапа:** 0% завершено
 
 ---
 
@@ -1694,7 +1668,7 @@ func TestDataSourceCRUD(t *testing.T) {
 
 | № | Протокол | Версии / Варианты | Назначение | Приоритет | Статус |
 |---|----------|-------------------|------------|-----------|--------|
-| 1 | **SNMP** | v1, v2c, v3 | Управление сетевыми устройствами | Высокий | Планируется |
+| 1 | **gNMI** | gRPC Network Management Interface | Управление и телеметрия сетевых устройств | Высокий | Планируется |
 | 2 | **ICMP** | IPv4, IPv6 | Ping, трассировка маршрута | Высокий | Планируется |
 | 3 | **Syslog** | RFC 3164, RFC 5424 | Сбор логов | Высокий | Планируется |
 | 4 | **NetFlow** | v5, v9, IPFIX | Анализ трафика | Высокий | Планируется |
@@ -1711,7 +1685,7 @@ func TestDataSourceCRUD(t *testing.T) {
 |---|----------|-------------------|------------|-----------|--------|
 | 11 | **HTTP/HTTPS** | 1.1, 2, 3 | Web-мониторинг, API | Высокий | Планируется |
 | 12 | **FTP** | FTP, FTPS, SFTP | Передача файлов | Средний | Планируется |
-| 13 | **SSH** | SSH-2 | Удалённое управление | Высокий | Планируется |
+| 13 | **gNMI/gRPC** | gRPC-based | Современная альтернатива SSH/CLI | Высокий | Планируется |
 | 14 | **SMTP** | SMTP, ESMTP | Отправка почты | Средний | Планируется |
 | 15 | **IMAP** | IMAP4 | Проверка почты | Низкий | Планируется |
 | 16 | **POP3** | POP3, POP3S | Проверка почты | Низкий | Планируется |
@@ -1726,7 +1700,7 @@ func TestDataSourceCRUD(t *testing.T) {
 |---|----------|-------------------|------------|-----------|--------|
 | 21 | **JDBC** | Все драйверы | Подключение к БД | Средний | Планируется |
 | 22 | **SQL** | Native protocols | Запросы к БД | Высокий | Планируется |
-| 23 | **CORBA** | IIOP | Legacy интеграция | Низкий | Планируется |
+| 23 | **gNMI Set** | gRPC SetRequest | Конфигурация устройств (замена CORBA) | Средний | Планируется |
 | 24 | **WBEM** | CIM-XML, WS-Man | Управление предприятием | Низкий | Планируется |
 
 #### Специализированные протоколы
@@ -1907,10 +1881,10 @@ func (r *Registry) ListProtocols() []string {
 
 ### Примеры реализаций поллеров
 
-#### SNMP Poller (v1, v2c, v3)
+#### gNMI Poller (gRPC Network Management Interface)
 
 ```go
-// internal/pkg/pollers/snmp_poller.go
+// internal/pkg/pollers/gnmi_poller.go
 
 package pollers
 
@@ -1919,74 +1893,110 @@ import (
     "fmt"
     "time"
     
-    "github.com/gosnmp/gosnmp"
+    "github.com/openconfig/gnmi/client"
+    "github.com/openconfig/gnmi/client/gnmi"
+    gnmi_pb "github.com/openconfig/gnmi/proto/gnmi"
+    "google.golang.org/grpc/credentials"
 )
 
-type SNMPPoller struct {
-    client *gosnmp.GoSNMP
+type GNMIPoller struct {
+    client *gnmi.Client
     config ProtocolConfig
     metrics PollerMetrics
+    target *client.Target
 }
 
-func NewSNMPPoller(config ProtocolConfig) (Poller, error) {
-    var version gosnmp.SnmpVersion
-    
-    switch config.Version {
-    case "v1":
-        version = gosnmp.Version1
-    case "v2c":
-        version = gosnmp.Version2c
-    case "v3":
-        version = gosnmp.Version3
-    default:
-        version = gosnmp.Version2c
-    }
-    
-    client := &gosnmp.GoSNMP{
-        Target:    config.Endpoint,
-        Port:      uint16(config.DefaultPort),
-        Community: config.Community,
-        Version:   version,
-        Timeout:   time.Duration(config.Timeout) * time.Second,
-        Retries:   config.RetryCount,
-    }
-    
-    if version == gosnmp.Version3 {
-        client.SecurityModel = gosnmp.UserSecurityModel
-        client.SecurityParameters = &gosnmp.UsmSecurityParameters{
-            UserName:                 config.Username,
-            AuthenticationProtocol:   getAuthProtocol(config.AuthProtocol),
-            AuthenticationPassphrase: config.Password,
-            PrivacyProtocol:          getPrivProtocol(config.PrivProtocol),
-            PrivacyPassphrase:        config.Password,
+func NewGNMIPoller(config ProtocolConfig) (Poller, error) {
+    // Создание gRPC credentials для TLS
+    var opts []grpc.DialOption
+    if config.TLSEnabled {
+        tlsConfig := &tls.Config{
+            InsecureSkipVerify: config.SkipTLSVerify,
         }
+        opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+    } else {
+        opts = append(opts, grpc.WithInsecure())
     }
     
-    return &SNMPPoller{
-        client: client,
+    // Аутентификация
+    if config.Username != "" && config.Password != "" {
+        opts = append(opts, grpc.WithPerRPCCredentials(
+            &basicAuth{
+                username: config.Username,
+                password: config.Password,
+            },
+        ))
+    }
+    
+    gnmiClient, err := gnmi.NewClient(context.Background(), 
+        gnmi.Config{
+            Address:  fmt.Sprintf("%s:%d", config.Endpoint, config.DefaultPort),
+            DialOpts: opts,
+        })
+    if err != nil {
+        return nil, fmt.Errorf("failed to create gNMI client: %w", err)
+    }
+    
+    target := &client.Target{
+        Name:   config.DeviceName,
+        Addrs:  []string{fmt.Sprintf("%s:%d", config.Endpoint, config.DefaultPort)},
+        Config: &gnmiClient.Config,
+    }
+    
+    return &GNMIPoller{
+        client: gnmiClient,
         config: config,
+        target: target,
         metrics: PollerMetrics{ConnectionState: "disconnected"},
     }, nil
 }
 
-func (p *SNMPPoller) Connect(ctx context.Context) error {
-    return p.client.Connect()
+func (p *GNMIPoller) Connect(ctx context.Context) error {
+    p.metrics.ConnectionState = "connecting"
+    err := p.target.Dial(ctx, time.Duration(p.config.Timeout)*time.Second)
+    if err != nil {
+        p.metrics.ConnectionState = "disconnected"
+        return err
+    }
+    p.metrics.ConnectionState = "connected"
+    p.metrics.LastConnectTime = time.Now()
+    return nil
 }
 
-func (p *SNMPPoller) Disconnect(ctx context.Context) error {
-    return p.client.Conn.Close()
+func (p *GNMIPoller) Disconnect(ctx context.Context) error {
+    p.target.Close()
+    p.metrics.ConnectionState = "disconnected"
+    return nil
 }
 
-func (p *SNMPPoller) Read(ctx context.Context, query Query) ([]Result, error) {
+// Read выполняет gNMI Get запрос для получения телеметрических данных
+func (p *GNMIPoller) Read(ctx context.Context, query Query) ([]Result, error) {
     start := time.Now()
     p.metrics.TotalRequests++
     
-    oids, ok := query.Parameters["oids"].([]string)
+    paths, ok := query.Parameters["paths"].([]string)
     if !ok {
-        return nil, fmt.Errorf("invalid OIDs parameter")
+        return nil, fmt.Errorf("invalid paths parameter")
     }
     
-    result, err := p.client.Get(oids)
+    // Преобразование строк путей в gNMI Path
+    gnmiPaths := make([]*gnmi_pb.Path, 0, len(paths))
+    for _, pathStr := range paths {
+        path, err := client.ParsePath(pathStr)
+        if err != nil {
+            return nil, fmt.Errorf("failed to parse path %s: %w", pathStr, err)
+        }
+        gnmiPaths = append(gnmiPaths, path)
+    }
+    
+    // Формирование gNMI GetRequest
+    getRequest := &gnmi_pb.GetRequest{
+        Path: gnmiPaths,
+        Type: gnmi_pb.DataType_STATE, // STATE, CONFIG, OPERATIONAL
+    }
+    
+    // Выполнение запроса
+    getResponse, err := p.client.Get(ctx, getRequest)
     latency := time.Since(start)
     
     if err != nil {
@@ -2003,9 +2013,14 @@ func (p *SNMPPoller) Read(ctx context.Context, query Query) ([]Result, error) {
     p.metrics.SuccessfulReqs++
     p.metrics.AvgLatency = latency
     
+    // Парсинг ответа
     data := make(map[string]interface{})
-    for _, variable := range result.Variables {
-        data[variable.Name] = gosnmp.ToPrettyFormat(variable.Value)
+    for _, notification := range getResponse.Notification {
+        for _, update := range notification.Update {
+            pathStr := client.PathToString(update.Path)
+            value := update.Val.GetValue()
+            data[pathStr] = value
+        }
     }
     
     return []Result{{
@@ -2017,59 +2032,152 @@ func (p *SNMPPoller) Read(ctx context.Context, query Query) ([]Result, error) {
     }}, nil
 }
 
-func (p *SNMPPoller) HealthCheck(ctx context.Context) error {
-    return p.client.Connect()
+// Subscribe подписывается на потоковые gNMI обновления (telemetry stream)
+func (p *GNMIPoller) Subscribe(ctx context.Context, subscription Subscription, callback func(Result)) error {
+    paths, ok := subscription.Parameters["paths"].([]string)
+    if !ok {
+        return fmt.Errorf("invalid subscription paths")
+    }
+    
+    gnmiPaths := make([]*gnmi_pb.Path, 0, len(paths))
+    for _, pathStr := range paths {
+        path, err := client.ParsePath(pathStr)
+        if err != nil {
+            return fmt.Errorf("failed to parse path %s: %w", pathStr, err)
+        }
+        gnmiPaths = append(gnmiPaths, path)
+    }
+    
+    // Подписки для streaming telemetry
+    subscriptions := make([]*gnmi_pb.Subscription, 0, len(gnmiPaths))
+    for _, path := range gnmiPaths {
+        subscriptions = append(subscriptions, &gnmi_pb.Subscription{
+            Path:              path,
+            Mode:              gnmi_pb.SubscriptionMode_SAMPLE,
+            SampleInterval:    uint64(subscription.Interval.Milliseconds()),
+            SuppressRedundant: true,
+        })
+    }
+    
+    subRequest := &gnmi_pb.SubscribeRequest{
+        Subscribe: &gnmi_pb.SubscriptionList{
+            Subscription: subscriptions,
+            Mode:         gnmi_pb.SubscriptionList_STREAM,
+            UpdatesOnly:  true,
+        },
+    }
+    
+    // Запуск потоковой подписки
+    q := &query{
+        NotificationsCB: func(n *gnmi_pb.Notification) {
+            data := make(map[string]interface{})
+            for _, update := range n.Update {
+                pathStr := client.PathToString(update.Path)
+                data[pathStr] = update.Val.GetValue()
+            }
+            
+            callback(Result{
+                Target:    p.config.Endpoint,
+                Timestamp: time.Now(),
+                Success:   true,
+                Data:      data,
+            })
+        },
+    }
+    
+    p.metrics.SubscriptionCount++
+    return p.target.Subscribe(ctx, subRequest, q)
 }
 
-func (p *SNMPPoller) GetMetrics() PollerMetrics {
+// Set выполняет gNMI SetRequest для изменения конфигурации устройства
+func (p *GNMIPoller) Write(ctx context.Context, command Command) error {
+    start := time.Now()
+    p.metrics.TotalRequests++
+    
+    updates, ok := command.Parameters["updates"].(map[string]interface{})
+    if !ok {
+        return fmt.Errorf("invalid updates parameter")
+    }
+    
+    // Преобразование обновлений в gNMI Update
+    gnmiUpdates := make([]*gnmi_pb.Update, 0, len(updates))
+    for pathStr, value := range updates {
+        path, err := client.ParsePath(pathStr)
+        if err != nil {
+            return fmt.Errorf("failed to parse path %s: %w", pathStr, err)
+        }
+        
+        gnmiValue, err := interfaceToTypedValue(value)
+        if err != nil {
+            return fmt.Errorf("failed to convert value for %s: %w", pathStr, err)
+        }
+        
+        gnmiUpdates = append(gnmiUpdates, &gnmi_pb.Update{
+            Path: path,
+            Val:  gnmiValue,
+        })
+    }
+    
+    setRequest := &gnmi_pb.SetRequest{
+        Update: gnmiUpdates,
+    }
+    
+    _, err := p.client.Set(ctx, setRequest)
+    latency := time.Since(start)
+    
+    if err != nil {
+        p.metrics.FailedReqs++
+        return err
+    }
+    
+    p.metrics.SuccessfulReqs++
+    p.metrics.AvgLatency = latency
+    return nil
+}
+
+func (p *GNMIPoller) HealthCheck(ctx context.Context) error {
+    // Простая проверка через Capabilities запрос
+    _, err := p.client.Capabilities(ctx, &gnmi_pb.CapabilityRequest{})
+    return err
+}
+
+func (p *GNMIPoller) GetMetrics() PollerMetrics {
     return p.metrics
 }
 
-// Заглушки для методов Write и Subscribe
-func (p *SNMPPoller) Write(ctx context.Context, command Command) error {
-    return fmt.Errorf("SNMP write not implemented")
-}
-
-func (p *SNMPPoller) Subscribe(ctx context.Context, subscription Subscription, callback func(Result)) error {
-    return fmt.Errorf("SNMP subscribe not implemented")
-}
-
-func getAuthProtocol(proto string) gosnmp.SnmpV3AuthProtocol {
-    switch proto {
-    case "MD5":
-        return gosnmp.MD5
-    case "SHA":
-        return gosnmp.SHA
-    case "SHA224":
-        return gosnmp.SHA224
-    case "SHA256":
-        return gosnmp.SHA256
-    case "SHA384":
-        return gosnmp.SHA384
-    case "SHA512":
-        return gosnmp.SHA512
+// Вспомогательные функции
+func interfaceToTypedValue(v interface{}) (*gnmi_pb.TypedValue, error) {
+    // Конвертация Go типов в gNMI TypedValue
+    switch val := v.(type) {
+    case string:
+        return &gnmi_pb.TypedValue{Value: &gnmi_pb.TypedValue_StringVal{StringVal: val}}, nil
+    case int64:
+        return &gnmi_pb.TypedValue{Value: &gnmi_pb.TypedValue_IntVal{IntVal: val}}, nil
+    case uint64:
+        return &gnmi_pb.TypedValue{Value: &gnmi_pb.TypedValue_UintVal{UintVal: val}}, nil
+    case bool:
+        return &gnmi_pb.TypedValue{Value: &gnmi_pb.TypedValue_BoolVal{BoolVal: val}}, nil
+    case float64:
+        return &gnmi_pb.TypedValue{Value: &gnmi_pb.TypedValue_DoubleVal{DoubleVal: val}}, nil
     default:
-        return gosnmp.NoAuth
+        return nil, fmt.Errorf("unsupported type %T", v)
     }
 }
 
-func getPrivProtocol(proto string) gosnmp.SnmpV3PrivProtocol {
-    switch proto {
-    case "DES":
-        return gosnmp.DES
-    case "AES":
-        return gosnmp.AES
-    case "AES192":
-        return gosnmp.AES192
-    case "AES256":
-        return gosnmp.AES256
-    case "AES192C":
-        return gosnmp.AES192C
-    case "AES256C":
-        return gosnmp.AES256C
-    default:
-        return gosnmp.NoPriv
-    }
+type basicAuth struct {
+    username string
+    password string
+}
+
+func (b *basicAuth) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+    return map[string]string{
+        "username": b.username,
+        "password": b.password,
+    }, nil
+}
+
+func (b *basicAuth) RequireTransportSecurity() bool {
+    return false
 }
 ```
 
@@ -2988,12 +3096,12 @@ INSERT INTO core_vendor (name, slug, description, protocols) VALUES
 | Мониторинг и алертинг | 16 | Средний |
 | Документация вендоров | 8 | Средний |
 | **Поддержка протоколов** | | |
-| Поллер SNMP (v1, v2c, v3) | 20 | Высокий |
+| Поллер gNMI (Get/Set/Subscribe) | 24 | Высокий |
 | Поллер ICMP (Ping) | 8 | Высокий |
 | Поллер Modbus TCP/RTU | 16 | Высокий |
 | Поллер HTTP/HTTPS | 12 | Высокий |
 | Поллер DNS | 12 | Высокий |
-| Поллер SSH | 16 | Высокий |
+| Поллер gNMI Streaming Telemetry | 20 | Высокий |
 | Поллер LDAP/LDAPS | 12 | Высокий |
 | Поллер Radius | 12 | Высокий |
 | Поллер BGP (BGP-4) | 20 | Высокий |
@@ -3007,7 +3115,6 @@ INSERT INTO core_vendor (name, slug, description, protocols) VALUES
 | Поллер BACnet | 16 | Средний |
 | Поллер OPC UA | 20 | Высокий |
 | Поллер NMEA 0183 | 10 | Низкий |
-| Поллер CORBA/WBEM | 20 | Низкий |
 | Интеграция PollingService с etcd | 16 | Высокий |
 | Документация протоколов | 8 | Средний |
 | **Итого базовая миграция** | **88 часов** | |
@@ -3059,7 +3166,7 @@ INSERT INTO core_vendor (name, slug, description, protocols) VALUES
 5. **Неделя 5**: Документация и финальная отладка
 6. **Недели 6-13**: Реализация поддержки вендоров (Фазы 1-3)
 7. **Недели 14-22**: Специализированные протоколы и Historians (Фазы 4-5)
-8. **Недели 23-30**: Реализация поллеров сетевых протоколов (SNMP, ICMP, DNS, SSH, LDAP, BGP, Syslog, NetFlow)
+8. **Недели 23-30**: Реализация поллеров сетевых протоколов (gNMI, ICMP, DNS, LDAP, BGP, Syslog, NetFlow)
 9. **Недели 31-36**: Поллеры прикладных протоколов (HTTP, FTP, SMTP, JMX, WMI, BACnet)
 10. **Недели 37-40**: Интеграция, мониторинг и финальное тестирование
 
@@ -3067,19 +3174,336 @@ INSERT INTO core_vendor (name, slug, description, protocols) VALUES
 
 | Библиотека | Назначение | Ссылка |
 |------------|------------|--------|
+| `openconfig/gnmi` | gNMI клиент/сервер | github.com/openconfig/gnmi |
+| `grpc/grpc-go` | gRPC для gNMI и внутренних API | google.golang.org/grpc |
 | `gopcua/opcua` | OPC UA клиент | github.com/gopcua/opcua |
 | `grid-x/modbus` | Modbus TCP/RTU | github.com/grid-x/modbus |
 | `robinson/gos7` | Siemens S7 Comm | github.com/robinson/gos7 |
-| `gosnmp/gosnmp` | SNMP v1/v2c/v3 | github.com/gosnmp/gosnmp |
 | `go-ping/ping` | ICMP Ping | github.com/go-ping/ping |
 | `miekg/dns` | DNS клиент/сервер | github.com/miekg/dns |
-| `gliderlabs/ssh` | SSH сервер/клиент | github.com/gliderlabs/ssh |
 | `go-ldap/ldap` | LDAP клиент | github.com/go-ldap/ldap |
 | `eclipse/paho.mqtt.golang` | MQTT для телеметрии | github.com/eclipse/paho.mqtt.golang |
 | `apache/thrift` | Thrift RPC (некоторые вендоры) | github.com/apache/thrift |
-| `grpc/grpc-go` | gRPC для внутренних API | google.golang.org/grpc |
 | `jackc/pgx` | PostgreSQL драйвер | github.com/jackc/pgx/v5 |
 | `etcd-io/etcd/client/v3` | etcd клиент | go.etcd.io/etcd/client/v3 |
 | `nwaples/radius` | RADIUS клиент | github.com/nwaples/radius |
-| `sirikothe/gotextfsm` | Парсинг вывода CLI (для BGP/SSH) | github.com/sirikothe/gotextfsm |
 | `google/gopacket` | Анализ пакетов (NetFlow, PCAP) | github.com/google/gopacket |
+| `nats-io/nats.go` | NATS для streaming telemetry | github.com/nats-io/nats.go |
+
+---
+
+## Сбор gNMI метрик и телеметрии
+
+### Архитектура системы сбора метрик
+
+Система сбора метрик на базе gNMI состоит из следующих компонентов:
+
+1. **gNMI Poller** — опрашивает устройства по запросу (polling)
+2. **gNMI Subscriber** — получает потоковые обновления (streaming telemetry)
+3. **Metrics Processor** — обрабатывает и агрегирует полученные данные
+4. **Time-Series Storage** — хранит временные ряды (Prometheus, InfluxDB, TimescaleDB)
+5. **Metrics Exporter** — экспортирует метрики в системы мониторинга
+
+### Режимы работы gNMI
+
+#### 1. Periodic Polling (Периодический опрос)
+
+Используется для устройств без поддержки streaming или для редких метрик:
+
+```go
+type PollingConfig struct {
+    Interval    time.Duration  // Интервал опроса (например, 30s, 1m, 5m)
+    Paths       []string       // gNMI пути для опроса
+    DataType    gnmi.DataType  // STATE, CONFIG, OPERATIONAL
+    Timeout     time.Duration  // Таймаут запроса
+    RetryCount  int            // Количество повторных попыток
+}
+
+// Пример конфигурации polling
+config := PollingConfig{
+    Interval: 30 * time.Second,
+    Paths: []string{
+        "/interfaces/interface/state/oper-status",
+        "/interfaces/interface/state/counters/in-octets",
+        "/interfaces/interface/state/counters/out-octets",
+        "/system/cpu/utilization",
+        "/system/memory/utilized",
+    },
+    DataType: gnmi.STATE,
+    Timeout:  10 * time.Second,
+    RetryCount: 3,
+}
+```
+
+#### 2. Streaming Telemetry (Потоковая телеметрия)
+
+Рекомендуемый режим для высокочастотных метрик:
+
+```go
+type StreamingConfig struct {
+    Paths            []string              // Подписываемые пути
+    Mode             SubscriptionMode      // SAMPLE, ON_CHANGE, TARGET_DEFINED
+    SampleInterval   time.Duration         // Интервал дискретизации (для SAMPLE)
+    SuppressRedundant bool                 // Подавлять повторяющиеся значения
+    HeartbeatInterval time.Duration        // Интервал heartbeat сообщений
+    Encoding          EncodingType          // JSON_IETF, PROTO, BYTES
+}
+
+// Пример конфигурации streaming
+streamConfig := StreamingConfig{
+    Paths: []string{
+        "/interfaces/interface/state/counters/@[name=*]",
+        "/network-instances/network-instance/protocols/protocol/bgp/neighbors/neighbor/@[neighbor-address=*]",
+    },
+    Mode:              gnmi.SUBSCRIPTION_MODE_SAMPLE,
+    SampleInterval:    10 * time.Second,
+    SuppressRedundant: true,
+    HeartbeatInterval: 60 * time.Second,
+    Encoding:          gnmi.JSON_IETF,
+}
+```
+
+### Типы подписок gNMI
+
+| Тип подписки | Описание | Use Case |
+|--------------|----------|----------|
+| **SAMPLE** | Периодическая отправка значений | Счётчики интерфейсов, CPU, память |
+| **ON_CHANGE** | Отправка только при изменении | Статус интерфейса, BGP состояние |
+| **TARGET_DEFINED** | Режим определяется устройством | Специфичные для вендора метрики |
+
+### Пример обработки gNMI метрик
+
+```go
+type MetricsProcessor struct {
+    storage TimeSeriesStorage
+    labels  map[string]string
+}
+
+// ProcessGNMINotification обрабатывает уведомление gNMI
+func (p *MetricsProcessor) ProcessGNMINotification(
+    ctx context.Context,
+    target string,
+    notification *gnmi.Notification,
+) error {
+    timestamp := time.Unix(0, notification.Timestamp)
+    
+    for _, update := range notification.Update {
+        path := client.PathToString(update.Path)
+        value := update.Val.GetValue()
+        
+        // Преобразование gNMI пути в Prometheus-подобные метрики
+        metricName, labels := p.parsePath(path, target)
+        
+        // Извлечение числового значения
+        floatValue, err := p.extractFloatValue(value)
+        if err != nil {
+            continue // Пропускаем нечисловые значения
+        }
+        
+        // Сохранение в time-series хранилище
+        metric := &Metric{
+            Name:      metricName,
+            Labels:    labels,
+            Value:     floatValue,
+            Timestamp: timestamp,
+        }
+        
+        if err := p.storage.WriteMetric(ctx, metric); err != nil {
+            return fmt.Errorf("failed to write metric: %w", err)
+        }
+    }
+    
+    return nil
+}
+
+// parsePath преобразует gNMI путь в имя метрики и лейблы
+func (p *MetricsProcessor) parsePath(path, target string) (string, map[string]string) {
+    // Пример: /interfaces/interface[name=eth0]/state/counters/in-octets
+    // -> metric: gnmi_interface_in_octets, labels: {interface="eth0", device="router1"}
+    
+    labels := map[string]string{
+        "device": target,
+    }
+    
+    // Парсинг пути с помощью regex или специализированной библиотеки
+    // ... реализация парсинга ...
+    
+    return metricName, labels
+}
+
+// extractFloatValue извлекает float64 из gNMI TypedValue
+func (p *MetricsProcessor) extractFloatValue(val *gnmi.TypedValue) (float64, error) {
+    switch v := val.Value.(type) {
+    case *gnmi.TypedValue_IntVal:
+        return float64(v.IntVal), nil
+    case *gnmi.TypedValue_UintVal:
+        return float64(v.UintVal), nil
+    case *gnmi.TypedValue_DoubleVal:
+        return v.DoubleVal, nil
+    case *gnmi.TypedValue_FloatVal:
+        return float64(v.FloatVal), nil
+    case *gnmi.TypedValue_StringVal:
+        // Попытка парсинга строки как числа
+        return strconv.ParseFloat(v.StringVal, 64)
+    default:
+        return 0, fmt.Errorf("unsupported value type: %T", val.Value)
+    }
+}
+```
+
+### Интеграция с Prometheus
+
+#### Вариант 1: Push-модель (через Pushgateway)
+
+```go
+type PrometheusExporter struct {
+    registry *prometheus.Registry
+    gauges   map[string]*prometheus.GaugeVec
+    counters map[string]*prometheus.CounterVec
+}
+
+func (e *PrometheusExporter) ExportMetric(metric *Metric) error {
+    // Получение или создание метрики
+    gauge, ok := e.gauges[metric.Name]
+    if !ok {
+        gauge = prometheus.NewGaugeVec(
+            prometheus.GaugeOpts{
+                Name: metric.Name,
+                Help: "gNMI metric from network devices",
+            },
+            getLabelNames(metric.Labels),
+        )
+        e.registry.MustRegister(gauge)
+        e.gauges[metric.Name] = gauge
+    }
+    
+    // Установка значения
+    gauge.With(metric.Labels).Set(metric.Value)
+    
+    return nil
+}
+```
+
+#### Вариант 2: Pull-модель (HTTP endpoint)
+
+```go
+// HTTP handler для Prometheus scrape
+func (e *PrometheusExporter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    encoder := expfmt.NewEncoder(w, expfmt.FmtText)
+    
+    metrics, err := e.registry.Gather()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    
+    for _, m := range metrics {
+        if err := encoder.Encode(m); err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+    }
+}
+```
+
+### Конфигурация сбора метрик
+
+Пример YAML конфигурации:
+
+```yaml
+gnmi_collection:
+  targets:
+    - name: core-router-1
+      address: 192.168.1.1:57400
+      credentials:
+        username: admin
+        password: secret
+      tls:
+        enabled: true
+        insecure_skip_verify: false
+      
+      # Periodic polling config
+      polling:
+        interval: 30s
+        paths:
+          - /system/cpu/utilization
+          - /system/memory/utilized
+      
+      # Streaming subscriptions
+      streaming:
+        - name: interface-counters
+          mode: SAMPLE
+          sample_interval: 10s
+          paths:
+            - /interfaces/interface/state/counters/*
+        
+        - name: bgp-state
+          mode: ON_CHANGE
+          paths:
+            - /network-instances/*/protocols/protocol/bgp/neighbors/neighbor/state/session-state
+      
+      # Метрики для экспорта
+      metrics_mapping:
+        - path: /interfaces/interface/state/counters/in-octets
+          name: gnmi_interface_in_octets
+          type: counter
+          labels:
+            - interface
+        - path: /system/cpu/utilization
+          name: gnmi_system_cpu_utilization
+          type: gauge
+          labels: []
+  
+  storage:
+    type: prometheus
+    remote_write:
+      url: http://prometheus:9090/api/v1/write
+  
+  export:
+    prometheus:
+      enabled: true
+      port: 8080
+      path: /metrics
+```
+
+### Оптимизация производительности
+
+1. **Batching** — группировка нескольких обновлений в один запрос к хранилищу
+2. **Compression** — сжатие gRPC сообщений (gzip)
+3. **Connection Pooling** — переиспользование gRPC соединений
+4. **Backpressure** — контроль потока данных при высокой нагрузке
+5. **Aggregation** — предварительная агрегация метрик перед сохранением
+
+### Мониторинг самой системы сбора
+
+```go
+type CollectorMetrics struct {
+    ActiveSubscriptions   prometheus.Gauge
+    ReceivedNotifications prometheus.Counter
+    ProcessingErrors      prometheus.Counter
+    StorageWriteLatency   prometheus.Histogram
+    GNMIRequestLatency    prometheus.Histogram
+}
+
+func NewCollectorMetrics(registry *prometheus.Registry) *CollectorMetrics {
+    return &CollectorMetrics{
+        ActiveSubscriptions: prometheus.NewGauge(prometheus.GaugeOpts{
+            Name: "gnmi_collector_active_subscriptions",
+            Help: "Number of active gNMI subscriptions",
+        }),
+        ReceivedNotifications: prometheus.NewCounter(prometheus.CounterOpts{
+            Name: "gnmi_collector_notifications_total",
+            Help: "Total number of gNMI notifications received",
+        }),
+        // ... остальные метрики ...
+    }
+}
+```
+
+### Рекомендации по развёртыванию
+
+1. **Масштабирование**: Запуск нескольких collector instances с sharding по устройствам
+2. **Отказоустойчивость**: Использование etcd для координации и failover
+3. **Безопасность**: TLS для gNMI соединений, аутентификация через сертификаты
+4. **Логирование**: Структурированные логи с корреляцией по request_id
+5. **Alerting**: Мониторинг задержек доставки телеметрии и ошибок подключения

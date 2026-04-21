@@ -9,6 +9,7 @@ import (
 	"time"
 
 	core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
+	core_enum "github.com/AlekseyPromet/netbox_go/internal/domain/core/enum"
 	"github.com/AlekseyPromet/netbox_go/internal/repository"
 	"github.com/AlekseyPromet/netbox_go/pkg/types"
 )
@@ -380,14 +381,82 @@ func (r *JobRepositoryPostgres) MarkCompleted(ctx context.Context, id string, ha
 		WHERE id = $4
 	`
 
-	status := core_entity.JobStatusCompleted
+	status := core_enum.JobStatusCompleted
 	if hasError && errorMsg != nil {
-		status = core_entity.JobStatusErrored
+		status = core_enum.JobStatusErrored
 	}
 
 	result, err := r.db.ExecContext(ctx, query, status, now, errorMsg, id)
 	if err != nil {
 		return fmt.Errorf("failed to mark job as completed: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return types.ErrNotFound
+	}
+
+	return nil
+}
+
+// Start запускает задачу, устанавливая статус и информацию о очереди
+func (r *JobRepositoryPostgres) Start(ctx context.Context, id string, queueName string, jobID string) error {
+	now := time.Now()
+	query := `
+		UPDATE core_jobs
+		SET status = $1, started_at = $2, queue_name = $3, job_id = $4, updated = NOW()
+		WHERE id = $5
+	`
+
+	result, err := r.db.ExecContext(ctx, query, core_enum.JobStatusRunning, now, queueName, jobID, id)
+	if err != nil {
+		return fmt.Errorf("failed to start job: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return types.ErrNotFound
+	}
+
+	return nil
+}
+
+// Complete завершает задачу с опциональной ошибкой
+func (r *JobRepositoryPostgres) Complete(ctx context.Context, id string, hasError bool, errorMsg *string) error {
+	return r.MarkCompleted(ctx, id, hasError, errorMsg)
+}
+
+// Log добавляет сообщение в лог задачи (в упрощенной модели записываем в поле error или data)
+func (r *JobRepositoryPostgres) Log(ctx context.Context, id string, message string) error {
+	// В полной реализации здесь было бы отдельное поле для логов или таблица job_logs
+	// Для MVP используем Update с добавлением сообщения в existing error/data
+	job, err := r.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// Добавляем сообщение к существующему error или создаем новое
+	var currentLog string
+	if job.Error != nil {
+		currentLog = *job.Error + "\n"
+	}
+	currentLog += fmt.Sprintf("[%s] %s", time.Now().Format(time.RFC3339), message)
+
+	query := `
+		UPDATE core_jobs
+		SET error = $1, updated = NOW()
+		WHERE id = $2
+	`
+
+	result, err := r.db.ExecContext(ctx, query, currentLog, id)
+	if err != nil {
+		return fmt.Errorf("failed to log job message: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()

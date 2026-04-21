@@ -208,3 +208,89 @@ func (r *ObjectTypeRepositoryPostgres) Delete(ctx context.Context, id string) er
 
 	return nil
 }
+
+// GetByAppAndModel получает тип объекта по app_label и model
+func (r *ObjectTypeRepositoryPostgres) GetByAppAndModel(ctx context.Context, appLabel string, model string) (*core_entity.ObjectType, error) {
+	query := `
+		SELECT id, app_label, model, public, features, created, updated
+		FROM core_object_types
+		WHERE app_label = $1 AND model = $2 AND deleted_at IS NULL
+	`
+
+	var ot core_entity.ObjectType
+	var featuresJSON []byte
+
+	err := r.db.QueryRowContext(ctx, query, appLabel, model).Scan(
+		&ot.ID, &ot.AppLabel, &ot.Model, &ot.Public,
+		&featuresJSON, &ot.Created, &ot.Updated,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, types.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object type by app and model: %w", err)
+	}
+
+	if featuresJSON != nil {
+		if err := json.Unmarshal(featuresJSON, &ot.Features); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal features: %w", err)
+		}
+	}
+
+	return &ot, nil
+}
+
+// GetForModel получает все типы объектов для данной модели
+func (r *ObjectTypeRepositoryPostgres) GetForModel(ctx context.Context, model string) ([]*core_entity.ObjectType, error) {
+	query := `
+		SELECT id, app_label, model, public, features, created, updated
+		FROM core_object_types
+		WHERE model = $1 AND deleted_at IS NULL
+		ORDER BY app_label
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, model)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list object types for model: %w", err)
+	}
+	defer rows.Close()
+
+	var objectTypes []*core_entity.ObjectType
+	for rows.Next() {
+		var ot core_entity.ObjectType
+		var featuresJSON []byte
+
+		err := rows.Scan(
+			&ot.ID, &ot.AppLabel, &ot.Model, &ot.Public,
+			&featuresJSON, &ot.Created, &ot.Updated,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan object type: %w", err)
+		}
+
+		if featuresJSON != nil {
+			if err := json.Unmarshal(featuresJSON, &ot.Features); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal features: %w", err)
+			}
+		}
+
+		objectTypes = append(objectTypes, &ot)
+	}
+
+	return objectTypes, nil
+}
+
+// Public возвращает список всех публичных типов объектов (их ID)
+func (r *ObjectTypeRepositoryPostgres) Public() []string {
+	// В полной реализации здесь был бы запрос к БД
+	// Для MVP возвращаем заглушку - в реальности нужно кэшировать или запрашивать
+	return []string{}
+}
+
+// WithFeature возвращает список ID типов объектов с указанной фичей
+func (r *ObjectTypeRepositoryPostgres) WithFeature(feature string) []string {
+	// В полной реализации здесь был бы запрос к БД с фильтрацией по features array
+	// Для MVP возвращаем заглушку
+	return []string{}
+}
