@@ -32,10 +32,22 @@ func main() {
 	siteRepo := postgres.NewSiteRepositoryPostgres(db)
 	accountRepo := postgres.NewAccountRepositoryPostgres(db)
 
+	// Core репозитории пока не реализованы в postgres, поэтому передаем nil (вернет 501).
+	var (
+		dataSourceRepo   repository.DataSourceRepository
+		dataFileRepo     repository.DataFileRepository
+		jobRepo          repository.JobRepository
+		objectChangeRepo repository.ObjectChangeRepository
+		objectTypeRepo   repository.ObjectTypeRepository
+	)
+
 	// Создание обработчиков
 	siteHandler := handlers.NewSiteHandler(siteRepo)
 	accountHandler := handlers.NewAccountHandler(
 		accountRepo, accountRepo, accountRepo, accountRepo, accountRepo,
+	)
+	coreHandler := handlers.NewCoreHandlers(
+		dataSourceRepo, dataFileRepo, jobRepo, objectChangeRepo, objectTypeRepo,
 	)
 
 	// Инициализация Echo
@@ -52,8 +64,51 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})
 
-	// API Routes - DCIM
+	// API Routes
 	api := e.Group("/api")
+
+	// Core
+	core := api.Group("/core")
+	dataSources := core.Group("/data-sources")
+	dataSources.GET("", coreHandler.ListDataSources)
+	dataSources.GET("/:id", coreHandler.GetDataSource)
+	dataSources.POST("", coreHandler.CreateDataSource)
+	dataSources.PUT("/:id", coreHandler.UpdateDataSource)
+	dataSources.DELETE("/:id", coreHandler.DeleteDataSource)
+
+	dataFiles := core.Group("/data-files")
+	dataFiles.GET("", coreHandler.ListDataFiles)
+	dataFiles.GET("/:id", coreHandler.GetDataFile)
+
+	jobs := core.Group("/jobs")
+	jobs.GET("", coreHandler.ListJobs)
+	jobs.GET("/:id", coreHandler.GetJob)
+
+	objectChanges := core.Group("/object-changes")
+	objectChanges.GET("", coreHandler.ListObjectChanges)
+	objectChanges.GET("/:id", coreHandler.GetObjectChange)
+
+	objectTypes := core.Group("/object-types")
+	objectTypes.GET("", coreHandler.ListObjectTypes)
+	objectTypes.GET("/:id", coreHandler.GetObjectType)
+
+	bgQueues := core.Group("/background-queues")
+	bgQueues.GET("", coreHandler.ListBackgroundQueues)
+	bgQueues.GET("/:name", coreHandler.GetBackgroundQueue)
+
+	bgWorkers := core.Group("/background-workers")
+	bgWorkers.GET("", coreHandler.ListBackgroundWorkers)
+	bgWorkers.GET("/:name", coreHandler.GetBackgroundWorker)
+
+	bgTasks := core.Group("/background-tasks")
+	bgTasks.GET("", coreHandler.ListBackgroundTasks)
+	bgTasks.GET("/:id", coreHandler.GetBackgroundTask)
+	bgTasks.POST("/:id/delete", coreHandler.DeleteBackgroundTask)
+	bgTasks.POST("/:id/requeue", coreHandler.RequeueBackgroundTask)
+	bgTasks.POST("/:id/enqueue", coreHandler.EnqueueBackgroundTask)
+	bgTasks.POST("/:id/stop", coreHandler.StopBackgroundTask)
+
+	// DCIM
 	dcim := api.Group("/dcim")
 
 	sites := dcim.Group("/sites")
