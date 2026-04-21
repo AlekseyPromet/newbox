@@ -7,10 +7,10 @@ import "github.com/AlekseyPromet/netbox_go/pkg/types"
 type CircuitStatus string
 
 const (
-	CircuitStatusPlanned       CircuitStatus = "planned"
-	CircuitStatusProvisioning  CircuitStatus = "provisioning"
-	CircuitStatusActive        CircuitStatus = "active"
-	CircuitStatusOffline       CircuitStatus = "offline"
+	CircuitStatusPlanned        CircuitStatus = "planned"
+	CircuitStatusProvisioning   CircuitStatus = "provisioning"
+	CircuitStatusActive         CircuitStatus = "active"
+	CircuitStatusOffline        CircuitStatus = "offline"
 	CircuitStatusDeprovisioning CircuitStatus = "deprovisioning"
 	CircuitStatusDecommissioned CircuitStatus = "decommissioned"
 )

@@ -20,33 +20,33 @@ type RSSFeedConfigForm struct {
 // Validate проверяет корректность данных формы
 func (f *RSSFeedConfigForm) Validate() error {
 	data := f.GetData()
-	
+
 	feedURL, ok := data["feed_url"].(string)
 	if !ok || feedURL == "" {
 		return &ValidationError{Field: "feed_url", Message: "Feed URL is required"}
 	}
-	
+
 	if maxEntries, exists := data["max_entries"]; exists && maxEntries != nil {
 		maxEntriesInt, ok := maxEntries.(int)
 		if !ok || maxEntriesInt < 1 || maxEntriesInt > 1000 {
 			return &ValidationError{Field: "max_entries", Message: "Max entries must be between 1 and 1000"}
 		}
 	}
-	
+
 	if cacheTimeout, exists := data["cache_timeout"]; exists && cacheTimeout != nil {
 		cacheTimeoutInt, ok := cacheTimeout.(int)
 		if !ok || cacheTimeoutInt < 600 || cacheTimeoutInt > 86400 {
 			return &ValidationError{Field: "cache_timeout", Message: "Cache timeout must be between 600 and 86400 seconds"}
 		}
 	}
-	
+
 	if requestTimeout, exists := data["request_timeout"]; exists && requestTimeout != nil {
 		requestTimeoutInt, ok := requestTimeout.(int)
 		if !ok || requestTimeoutInt < 1 || requestTimeoutInt > 60 {
 			return &ValidationError{Field: "request_timeout", Message: "Request timeout must be between 1 and 60 seconds"}
 		}
 	}
-	
+
 	return nil
 }
 

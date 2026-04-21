@@ -23,14 +23,14 @@ func (f *ObjectCountsConfigForm) Validate() error {
 	if !ok || len(models) == 0 {
 		return &ValidationError{Field: "models", Message: "At least one model must be selected"}
 	}
-	
+
 	if filters, exists := data["filters"]; exists && filters != nil {
 		// Validate that filters is a map
 		if _, ok := filters.(map[string]interface{}); !ok {
 			return &ValidationError{Field: "filters", Message: "Invalid format. Object filters must be passed as a dictionary."}
 		}
 	}
-	
+
 	return nil
 }
 

@@ -6,11 +6,11 @@ import "github.com/AlekseyPromet/netbox_go/pkg/types"
 // DataSourceStatus определяет статусы источника данных
 // См. netbox/core/choices.py DataSourceStatusChoices
 const (
-	DataSourceStatusNew      types.Status = "new"
-	DataSourceStatusQueued   types.Status = "queued"
-	DataSourceStatusSyncing  types.Status = "syncing"
+	DataSourceStatusNew       types.Status = "new"
+	DataSourceStatusQueued    types.Status = "queued"
+	DataSourceStatusSyncing   types.Status = "syncing"
 	DataSourceStatusCompleted types.Status = "completed"
-	DataSourceStatusFailed   types.Status = "failed"
+	DataSourceStatusFailed    types.Status = "failed"
 )
 
 // ValidDataSourceStatuses список допустимых статусов

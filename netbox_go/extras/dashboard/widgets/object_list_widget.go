@@ -19,26 +19,26 @@ type ObjectListConfigForm struct {
 // Validate проверяет корректность данных формы
 func (f *ObjectListConfigForm) Validate() error {
 	data := f.GetData()
-	
+
 	model, ok := data["model"].(string)
 	if !ok || model == "" {
 		return &ValidationError{Field: "model", Message: "Model is required"}
 	}
-	
+
 	if pageSize, exists := data["page_size"]; exists && pageSize != nil {
 		pageSizeInt, ok := pageSize.(int)
 		if !ok || pageSizeInt < 1 || pageSizeInt > 100 {
 			return &ValidationError{Field: "page_size", Message: "Page size must be between 1 and 100"}
 		}
 	}
-	
+
 	if urlParams, exists := data["url_params"]; exists && urlParams != nil {
 		// Validate that url_params is a map
 		if _, ok := urlParams.(map[string]interface{}); !ok {
 			return &ValidationError{Field: "url_params", Message: "Invalid format. URL parameters must be passed as a dictionary."}
 		}
 	}
-	
+
 	return nil
 }
 

@@ -19,14 +19,14 @@ type BookmarksConfigForm struct {
 // Validate проверяет корректность данных формы
 func (f *BookmarksConfigForm) Validate() error {
 	data := f.GetData()
-	
+
 	if objectTypes, exists := data["object_types"]; exists && objectTypes != nil {
 		// Validate that object_types is a slice of strings
 		if _, ok := objectTypes.([]string); !ok {
 			return &ValidationError{Field: "object_types", Message: "Object types must be a list of strings"}
 		}
 	}
-	
+
 	if orderBy, exists := data["order_by"]; exists && orderBy != nil {
 		orderByStr, ok := orderBy.(string)
 		if !ok {
@@ -34,23 +34,23 @@ func (f *BookmarksConfigForm) Validate() error {
 		}
 		// Validate order_by value (newest, oldest, az, za)
 		validOrderings := map[string]bool{
-			"created": true,
+			"created":  true,
 			"-created": true,
-			"az": true,
-			"za": true,
+			"az":       true,
+			"za":       true,
 		}
 		if !validOrderings[orderByStr] {
 			return &ValidationError{Field: "order_by", Message: "Invalid ordering value"}
 		}
 	}
-	
+
 	if maxItems, exists := data["max_items"]; exists && maxItems != nil {
 		maxItemsInt, ok := maxItems.(int)
 		if !ok || maxItemsInt < 1 {
 			return &ValidationError{Field: "max_items", Message: "Max items must be greater than 0"}
 		}
 	}
-	
+
 	return nil
 }
 

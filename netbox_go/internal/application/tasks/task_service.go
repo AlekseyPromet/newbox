@@ -342,7 +342,7 @@ type CreateTaskParams struct {
 // CreateTask создаёт новую задачу
 func (s *TaskService) CreateTask(ctx context.Context, params CreateTaskParams, createdBy types.ID) (*entity.Task, error) {
 	now := time.Now()
-	
+
 	// Проверяем существование вида работ
 	if _, err := s.workTypeRepo.GetByID(ctx, params.WorkTypeID); err != nil {
 		return nil, fmt.Errorf("work type not found: %w", err)
@@ -597,10 +597,10 @@ func (s *TaskService) CompleteTask(ctx context.Context, taskID, userID, comment 
 
 // ReviewTaskParams параметры проверки задачи
 type ReviewTaskParams struct {
-	TaskID      string
-	Approved    bool
-	Comment     string
-	ReviewerID  string
+	TaskID     string
+	Approved   bool
+	Comment    string
+	ReviewerID string
 }
 
 // ReviewTask проверяет задачу (принимает или отклоняет)

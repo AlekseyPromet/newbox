@@ -7,56 +7,56 @@ import (
 
 // ConfigContextProfile представляет профиль контекста конфигурации
 type ConfigContextProfile struct {
-	ID           string      `json:"id"`
-	URL          string      `json:"url"`
-	DisplayURL   string      `json:"display_url,omitempty"`
-	Display      string      `json:"display"`
-	Name         string      `json:"name"`
-	Description  string      `json:"description,omitempty"`
-	Schema       interface{} `json:"schema,omitempty"`
-	Tags         []Tag       `json:"tags,omitempty"`
-	Owner        interface{} `json:"owner,omitempty"`
-	Comments     string      `json:"comments,omitempty"`
-	DataSource   *DataSource `json:"data_source,omitempty"`
-	DataPath     string      `json:"data_path,omitempty"`
-	DataFile     *DataFile   `json:"data_file,omitempty"`
-	DataSynced   *time.Time  `json:"data_synced,omitempty"`
-	Created      *time.Time  `json:"created,omitempty"`
-	LastUpdated  *time.Time  `json:"last_updated,omitempty"`
+	ID          string      `json:"id"`
+	URL         string      `json:"url"`
+	DisplayURL  string      `json:"display_url,omitempty"`
+	Display     string      `json:"display"`
+	Name        string      `json:"name"`
+	Description string      `json:"description,omitempty"`
+	Schema      interface{} `json:"schema,omitempty"`
+	Tags        []Tag       `json:"tags,omitempty"`
+	Owner       interface{} `json:"owner,omitempty"`
+	Comments    string      `json:"comments,omitempty"`
+	DataSource  *DataSource `json:"data_source,omitempty"`
+	DataPath    string      `json:"data_path,omitempty"`
+	DataFile    *DataFile   `json:"data_file,omitempty"`
+	DataSynced  *time.Time  `json:"data_synced,omitempty"`
+	Created     *time.Time  `json:"created,omitempty"`
+	LastUpdated *time.Time  `json:"last_updated,omitempty"`
 }
 
 // ConfigContext представляет контекст конфигурации
 type ConfigContext struct {
-	ID            string        `json:"id"`
-	URL           string        `json:"url"`
-	DisplayURL    string        `json:"display_url,omitempty"`
-	Display       string        `json:"display"`
-	Name          string        `json:"name"`
-	Weight        int           `json:"weight"`
+	ID            string                `json:"id"`
+	URL           string                `json:"url"`
+	DisplayURL    string                `json:"display_url,omitempty"`
+	Display       string                `json:"display"`
+	Name          string                `json:"name"`
+	Weight        int                   `json:"weight"`
 	Profile       *ConfigContextProfile `json:"profile,omitempty"`
-	Description   string        `json:"description,omitempty"`
-	IsActive      bool          `json:"is_active"`
-	Regions       []Region      `json:"regions,omitempty"`
-	SiteGroups    []SiteGroup   `json:"site_groups,omitempty"`
-	Sites         []Site        `json:"sites,omitempty"`
-	Locations     []Location    `json:"locations,omitempty"`
-	DeviceTypes   []DeviceType  `json:"device_types,omitempty"`
-	Roles         []DeviceRole  `json:"roles,omitempty"`
-	Platforms     []Platform    `json:"platforms,omitempty"`
-	ClusterTypes  []ClusterType `json:"cluster_types,omitempty"`
-	ClusterGroups []ClusterGroup `json:"cluster_groups,omitempty"`
-	Clusters      []Cluster     `json:"clusters,omitempty"`
-	TenantGroups  []TenantGroup `json:"tenant_groups,omitempty"`
-	Tenants       []Tenant      `json:"tenants,omitempty"`
-	Owner         interface{}   `json:"owner,omitempty"`
-	Tags          []Tag         `json:"tags,omitempty"`
-	DataSource    *DataSource   `json:"data_source,omitempty"`
-	DataPath      string        `json:"data_path,omitempty"`
-	DataFile      *DataFile     `json:"data_file,omitempty"`
-	DataSynced    *time.Time    `json:"data_synced,omitempty"`
-	Data          interface{}   `json:"data"`
-	Created       *time.Time    `json:"created,omitempty"`
-	LastUpdated   *time.Time    `json:"last_updated,omitempty"`
+	Description   string                `json:"description,omitempty"`
+	IsActive      bool                  `json:"is_active"`
+	Regions       []Region              `json:"regions,omitempty"`
+	SiteGroups    []SiteGroup           `json:"site_groups,omitempty"`
+	Sites         []Site                `json:"sites,omitempty"`
+	Locations     []Location            `json:"locations,omitempty"`
+	DeviceTypes   []DeviceType          `json:"device_types,omitempty"`
+	Roles         []DeviceRole          `json:"roles,omitempty"`
+	Platforms     []Platform            `json:"platforms,omitempty"`
+	ClusterTypes  []ClusterType         `json:"cluster_types,omitempty"`
+	ClusterGroups []ClusterGroup        `json:"cluster_groups,omitempty"`
+	Clusters      []Cluster             `json:"clusters,omitempty"`
+	TenantGroups  []TenantGroup         `json:"tenant_groups,omitempty"`
+	Tenants       []Tenant              `json:"tenants,omitempty"`
+	Owner         interface{}           `json:"owner,omitempty"`
+	Tags          []Tag                 `json:"tags,omitempty"`
+	DataSource    *DataSource           `json:"data_source,omitempty"`
+	DataPath      string                `json:"data_path,omitempty"`
+	DataFile      *DataFile             `json:"data_file,omitempty"`
+	DataSynced    *time.Time            `json:"data_synced,omitempty"`
+	Data          interface{}           `json:"data"`
+	Created       *time.Time            `json:"created,omitempty"`
+	LastUpdated   *time.Time            `json:"last_updated,omitempty"`
 }
 
 // ConfigContextProfileBrief краткое представление профиля контекста
