@@ -9,6 +9,7 @@ import (
     core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
     dcim_entity "github.com/AlekseyPromet/netbox_go/internal/domain/dcim/entity"
     extras_entity "github.com/AlekseyPromet/netbox_go/internal/domain/extras/entity"
+    users_entity "github.com/AlekseyPromet/netbox_go/internal/domain/users/entity"
     "github.com/AlekseyPromet/netbox_go/pkg/types"
 
     circuits_entity "github.com/AlekseyPromet/netbox_go/internal/domain/circuits/entity"
@@ -409,6 +410,7 @@ type ObjectChangeFilter struct {
      GetByID(ctx context.Context, id string) (*core_entity.ConfigRevision, error)
      List(ctx context.Context, filter ConfigRevisionFilter) ([]*core_entity.ConfigRevision, int64, error)
      Create(ctx context.Context, revision *core_entity.ConfigRevision) error
+     Update(ctx context.Context, revision *core_entity.ConfigRevision) error
      Activate(ctx context.Context, id string) error
      Delete(ctx context.Context, id string) error
      GetActive(ctx context.Context) (*core_entity.ConfigRevision, error)
@@ -480,5 +482,62 @@ type ObjectChangeFilter struct {
      Start(ctx context.Context, id string, queueName string, jobID string) error
      Complete(ctx context.Context, id string, hasError bool, errorMsg *string) error
      Log(ctx context.Context, id string, message string) error
+ }
+
+// RoleRepository операции над ролями
+ type RoleRepository interface {
+     GetByID(ctx context.Context, id string) (*users_entity.Role, error)
+     GetByName(ctx context.Context, name string) (*users_entity.Role, error)
+     List(ctx context.Context, filter RoleFilter) ([]*users_entity.Role, int64, error)
+     Create(ctx context.Context, role *users_entity.Role) error
+     Update(ctx context.Context, role *users_entity.Role) error
+     Delete(ctx context.Context, id string) error
+ }
+
+// PermissionRepository операции над разрешениями
+ type PermissionRepository interface {
+     GetByID(ctx context.Context, id string) (*users_entity.Permission, error)
+     GetByCode(ctx context.Context, code string) (*users_entity.Permission, error)
+     List(ctx context.Context, filter PermissionFilter) ([]*users_entity.Permission, int64, error)
+     Create(ctx context.Context, permission *users_entity.Permission) error
+     Update(ctx context.Context, permission *users_entity.Permission) error
+     Delete(ctx context.Context, id string) error
+ }
+
+// UserRoleRepository операции над связями пользователь-роль
+ type UserRoleRepository interface {
+     GetByID(ctx context.Context, id string) (*users_entity.UserRole, error)
+     ListByUser(ctx context.Context, userID string) ([]*users_entity.UserRole, error)
+     ListByRole(ctx context.Context, roleID string) ([]*users_entity.UserRole, error)
+     Create(ctx context.Context, userRole *users_entity.UserRole) error
+     Delete(ctx context.Context, id string) error
+     DeleteByUserAndRole(ctx context.Context, userID, roleID string) error
+ }
+
+// JobAssignmentRepository операции над назначениями задач
+ type JobAssignmentRepository interface {
+     GetByID(ctx context.Context, id string) (*users_entity.JobAssignment, error)
+     ListByJob(ctx context.Context, jobID string) ([]*users_entity.JobAssignment, error)
+     ListByUser(ctx context.Context, userID string) ([]*users_entity.JobAssignment, error)
+     ListByGroup(ctx context.Context, groupID string) ([]*users_entity.JobAssignment, error)
+     Create(ctx context.Context, assignment *users_entity.JobAssignment) error
+     Update(ctx context.Context, assignment *users_entity.JobAssignment) error
+     Delete(ctx context.Context, id string) error
+ }
+
+// RoleFilter фильтр для поиска ролей
+ type RoleFilter struct {
+     Name   *string
+     Limit  int
+     Offset int
+ }
+
+// PermissionFilter фильтр для поиска разрешений
+ type PermissionFilter struct {
+     Code       *string
+     ObjectType *string
+     Action     *string
+     Limit      int
+     Offset     int
  }
 

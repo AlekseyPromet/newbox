@@ -17,6 +17,7 @@ import (
 
 	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/handlers"
 	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/middleware"
+	"github.com/AlekseyPromet/netbox_go/internal/repository"
 	"github.com/AlekseyPromet/netbox_go/internal/repository/postgres"
 )
 
@@ -39,6 +40,7 @@ func main() {
 		jobRepo          repository.JobRepository
 		objectChangeRepo repository.ObjectChangeRepository
 		objectTypeRepo   repository.ObjectTypeRepository
+		configRevRepo    repository.ConfigRevisionRepository
 	)
 
 	// Создание обработчиков
@@ -47,7 +49,7 @@ func main() {
 		accountRepo, accountRepo, accountRepo, accountRepo, accountRepo,
 	)
 	coreHandler := handlers.NewCoreHandlers(
-		dataSourceRepo, dataFileRepo, jobRepo, objectChangeRepo, objectTypeRepo,
+		dataSourceRepo, dataFileRepo, jobRepo, objectChangeRepo, objectTypeRepo, configRevRepo,
 	)
 
 	// Инициализация Echo
@@ -79,18 +81,32 @@ func main() {
 	dataFiles := core.Group("/data-files")
 	dataFiles.GET("", coreHandler.ListDataFiles)
 	dataFiles.GET("/:id", coreHandler.GetDataFile)
+	dataFiles.POST("", coreHandler.CreateDataFile)
+	dataFiles.PUT("/:id", coreHandler.UpdateDataFile)
+	dataFiles.DELETE("/:id", coreHandler.DeleteDataFile)
 
 	jobs := core.Group("/jobs")
 	jobs.GET("", coreHandler.ListJobs)
 	jobs.GET("/:id", coreHandler.GetJob)
+	jobs.POST("", coreHandler.CreateJob)
 
 	objectChanges := core.Group("/object-changes")
 	objectChanges.GET("", coreHandler.ListObjectChanges)
 	objectChanges.GET("/:id", coreHandler.GetObjectChange)
+	objectChanges.POST("/log", coreHandler.LogObjectChange)
 
 	objectTypes := core.Group("/object-types")
 	objectTypes.GET("", coreHandler.ListObjectTypes)
 	objectTypes.GET("/:id", coreHandler.GetObjectType)
+
+	configRevisions := core.Group("/config-revisions")
+	configRevisions.GET("", coreHandler.ListConfigRevisions)
+	configRevisions.GET("/:id", coreHandler.GetConfigRevision)
+	configRevisions.POST("", coreHandler.CreateConfigRevision)
+	configRevisions.PUT("/:id", coreHandler.UpdateConfigRevision)
+	configRevisions.DELETE("/:id", coreHandler.DeleteConfigRevision)
+	configRevisions.POST("/:id/activate", coreHandler.ActivateConfigRevision)
+	configRevisions.GET("/active", coreHandler.GetActiveConfigRevision)
 
 	bgQueues := core.Group("/background-queues")
 	bgQueues.GET("", coreHandler.ListBackgroundQueues)

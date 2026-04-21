@@ -2,30 +2,30 @@
 # Go build artifacts
 *.o
 *.a
-*.so
-*.exe
-*.dll
-*.dylib
+*.out
 *.test
 *.prof
+*.so
+*.dylib
+*.dll
 
-# Go cache and modules
-go.mod
-go.sum
+# Go cache and build directories
+go.sum.bk
+coverage.out
+cover.out
+*.coverprofile
+
+# Dependencies
 vendor/
 
-# Build directories
-bin/
-pkg/
-target/
-
-# Logs
+# Logs and temp files
 *.log
+*.tmp
 
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
 # Editors
 .vscode/
@@ -36,12 +36,4 @@ target/
 # OS generated files
 .DS_Store
 Thumbs.db
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Temporary files
-*.tmp
 ```

@@ -8,16 +8,18 @@ import (
 
     "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
     "github.com/AlekseyPromet/netbox_go/internal/repository"
+    "github.com/AlekseyPromet/netbox_go/pkg/types"
     "github.com/labstack/echo/v4"
 )
 
-// CoreHandlers объединяет обработчики Core API (data sources, data files, jobs, object changes, object types).
+// CoreHandlers объединяет обработчики Core API (data sources, data files, jobs, object changes, object types, config revisions).
 type CoreHandlers struct {
     dataSources   repository.DataSourceRepository
     dataFiles     repository.DataFileRepository
     jobs          repository.JobRepository
     objectChanges repository.ObjectChangeRepository
     objectTypes   repository.ObjectTypeRepository
+    configRevisions repository.ConfigRevisionRepository
 }
 
 // NewCoreHandlers конструирует CoreHandlers.
@@ -27,13 +29,15 @@ func NewCoreHandlers(
     jobs repository.JobRepository,
     oc repository.ObjectChangeRepository,
     ot repository.ObjectTypeRepository,
+    cr repository.ConfigRevisionRepository,
 ) *CoreHandlers {
     return &CoreHandlers{
-        dataSources:   ds,
-        dataFiles:     df,
-        jobs:          jobs,
-        objectChanges: oc,
-        objectTypes:   ot,
+        dataSources:     ds,
+        dataFiles:       df,
+        jobs:            jobs,
+        objectChanges:   oc,
+        objectTypes:     ot,
+        configRevisions: cr,
     }
 }
 
@@ -213,6 +217,75 @@ func (h *CoreHandlers) GetDataFile(c echo.Context) error {
     return c.JSON(http.StatusOK, item)
 }
 
+// CreateDataFile обрабатывает POST /api/core/data-files
+func (h *CoreHandlers) CreateDataFile(c echo.Context) error {
+    if h.dataFiles == nil {
+        return notImplemented(c, "DataFileRepository")
+    }
+
+    var df entity.DataFile
+    if err := c.Bind(&df); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+    }
+
+    if err := df.Validate(); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+    }
+
+    if err := h.dataFiles.Create(c.Request().Context(), &df); err != nil {
+        return handleError(err)
+    }
+
+    return c.JSON(http.StatusCreated, df)
+}
+
+// UpdateDataFile обрабатывает PUT /api/core/data-files/:id
+func (h *CoreHandlers) UpdateDataFile(c echo.Context) error {
+    if h.dataFiles == nil {
+        return notImplemented(c, "DataFileRepository")
+    }
+
+    id := c.Param("id")
+    existing, err := h.dataFiles.GetByID(c.Request().Context(), id)
+    if err != nil {
+        return handleError(err)
+    }
+
+    var input entity.DataFile
+    if err := c.Bind(&input); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+    }
+
+    input.ID = existing.ID
+    if err := input.Validate(); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+    }
+
+    if err := h.dataFiles.Update(c.Request().Context(), &input); err != nil {
+        return handleError(err)
+    }
+
+    updated, err := h.dataFiles.GetByID(c.Request().Context(), id)
+    if err != nil {
+        return handleError(err)
+    }
+
+    return c.JSON(http.StatusOK, updated)
+}
+
+// DeleteDataFile обрабатывает DELETE /api/core/data-files/:id
+func (h *CoreHandlers) DeleteDataFile(c echo.Context) error {
+    if h.dataFiles == nil {
+        return notImplemented(c, "DataFileRepository")
+    }
+
+    id := c.Param("id")
+    if err := h.dataFiles.Delete(c.Request().Context(), id); err != nil {
+        return handleError(err)
+    }
+    return c.NoContent(http.StatusNoContent)
+}
+
 // -------- Jobs --------
 
 // ListJobs обрабатывает GET /api/core/jobs
@@ -267,6 +340,28 @@ func (h *CoreHandlers) GetJob(c echo.Context) error {
         return handleError(err)
     }
     return c.JSON(http.StatusOK, item)
+}
+
+// CreateJob обрабатывает POST /api/core/jobs
+func (h *CoreHandlers) CreateJob(c echo.Context) error {
+    if h.jobs == nil {
+        return notImplemented(c, "JobRepository")
+    }
+
+    var job entity.Job
+    if err := c.Bind(&job); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+    }
+
+    if err := job.Validate(); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+    }
+
+    if err := h.jobs.Create(c.Request().Context(), &job); err != nil {
+        return handleError(err)
+    }
+
+    return c.JSON(http.StatusCreated, job)
 }
 
 // -------- Object Changes --------
@@ -333,6 +428,44 @@ func (h *CoreHandlers) GetObjectChange(c echo.Context) error {
     return c.JSON(http.StatusOK, item)
 }
 
+// LogObjectChange обрабатывает POST /api/core/object-changes/log
+func (h *CoreHandlers) LogObjectChange(c echo.Context) error {
+    if h.objectChanges == nil {
+        return notImplemented(c, "ObjectChangeRepository")
+    }
+
+    var req struct {
+        Action       string      `json:"action"`
+        ObjectType   string      `json:"object_type"`
+        ObjectID     string      `json:"object_id"`
+        ObjectRepr   string      `json:"object_repr"`
+        ObjectData   interface{} `json:"object_data,omitempty"`
+        UserID       *string     `json:"user_id,omitempty"`
+        RequestID    *string     `json:"request_id,omitempty"`
+    }
+
+    if err := c.Bind(&req); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+    }
+
+    if req.Action == "" || req.ObjectType == "" || req.ObjectID == "" || req.ObjectRepr == "" {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "missing required fields"})
+    }
+
+    var userID *types.ID
+    if req.UserID != nil {
+        uid := types.ID(*req.UserID)
+        userID = &uid
+    }
+
+    action := types.Status(req.Action)
+    if err := h.objectChanges.LogChange(c.Request().Context(), action, req.ObjectType, req.ObjectID, req.ObjectRepr, req.ObjectData, userID, req.RequestID); err != nil {
+        return handleError(err)
+    }
+
+    return c.JSON(http.StatusCreated, map[string]string{"status": "logged"})
+}
+
 // -------- Object Types --------
 
 // ListObjectTypes обрабатывает GET /api/core/object-types
@@ -380,6 +513,156 @@ func (h *CoreHandlers) GetObjectType(c echo.Context) error {
 
     id := c.Param("id")
     item, err := h.objectTypes.GetByID(c.Request().Context(), id)
+    if err != nil {
+        return handleError(err)
+    }
+    return c.JSON(http.StatusOK, item)
+}
+
+// -------- Config Revisions --------
+
+// ListConfigRevisions обрабатывает GET /api/core/config-revisions
+func (h *CoreHandlers) ListConfigRevisions(c echo.Context) error {
+    if h.configRevisions == nil {
+        return notImplemented(c, "ConfigRevisionRepository")
+    }
+
+    filter := repository.ConfigRevisionFilter{}
+    if v := c.QueryParam("active"); v != "" {
+        b, err := strconv.ParseBool(v)
+        if err == nil {
+            filter.Active = &b
+        }
+    }
+    if v := c.QueryParam("created_since"); v != "" {
+        if t, err := time.Parse(time.RFC3339, v); err == nil {
+            filter.CreatedSince = &t
+        }
+    }
+    if v := c.QueryParam("created_until"); v != "" {
+        if t, err := time.Parse(time.RFC3339, v); err == nil {
+            filter.CreatedUntil = &t
+        }
+    }
+    filter.Limit = parseLimit(c.QueryParam("limit"))
+    filter.Offset = parseOffset(c.QueryParam("offset"))
+
+    items, total, err := h.configRevisions.List(c.Request().Context(), filter)
+    if err != nil {
+        return handleError(err)
+    }
+
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "count":    total,
+        "next":     getNextURL(c, filter.Limit, filter.Offset+len(items), total),
+        "previous": getPreviousURL(c, filter.Offset),
+        "results":  items,
+    })
+}
+
+// GetConfigRevision обрабатывает GET /api/core/config-revisions/:id
+func (h *CoreHandlers) GetConfigRevision(c echo.Context) error {
+    if h.configRevisions == nil {
+        return notImplemented(c, "ConfigRevisionRepository")
+    }
+
+    id := c.Param("id")
+    item, err := h.configRevisions.GetByID(c.Request().Context(), id)
+    if err != nil {
+        return handleError(err)
+    }
+    return c.JSON(http.StatusOK, item)
+}
+
+// CreateConfigRevision обрабатывает POST /api/core/config-revisions
+func (h *CoreHandlers) CreateConfigRevision(c echo.Context) error {
+    if h.configRevisions == nil {
+        return notImplemented(c, "ConfigRevisionRepository")
+    }
+
+    var cr entity.ConfigRevision
+    if err := c.Bind(&cr); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+    }
+
+    if err := cr.Validate(); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+    }
+
+    if err := h.configRevisions.Create(c.Request().Context(), &cr); err != nil {
+        return handleError(err)
+    }
+
+    return c.JSON(http.StatusCreated, cr)
+}
+
+// UpdateConfigRevision обрабатывает PUT /api/core/config-revisions/:id
+func (h *CoreHandlers) UpdateConfigRevision(c echo.Context) error {
+    if h.configRevisions == nil {
+        return notImplemented(c, "ConfigRevisionRepository")
+    }
+
+    id := c.Param("id")
+    existing, err := h.configRevisions.GetByID(c.Request().Context(), id)
+    if err != nil {
+        return handleError(err)
+    }
+
+    var input entity.ConfigRevision
+    if err := c.Bind(&input); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+    }
+
+    input.ID = existing.ID
+    if err := input.Validate(); err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+    }
+
+    if err := h.configRevisions.Update(c.Request().Context(), &input); err != nil {
+        return handleError(err)
+    }
+
+    updated, err := h.configRevisions.GetByID(c.Request().Context(), id)
+    if err != nil {
+        return handleError(err)
+    }
+
+    return c.JSON(http.StatusOK, updated)
+}
+
+// DeleteConfigRevision обрабатывает DELETE /api/core/config-revisions/:id
+func (h *CoreHandlers) DeleteConfigRevision(c echo.Context) error {
+    if h.configRevisions == nil {
+        return notImplemented(c, "ConfigRevisionRepository")
+    }
+
+    id := c.Param("id")
+    if err := h.configRevisions.Delete(c.Request().Context(), id); err != nil {
+        return handleError(err)
+    }
+    return c.NoContent(http.StatusNoContent)
+}
+
+// ActivateConfigRevision обрабатывает POST /api/core/config-revisions/:id/activate
+func (h *CoreHandlers) ActivateConfigRevision(c echo.Context) error {
+    if h.configRevisions == nil {
+        return notImplemented(c, "ConfigRevisionRepository")
+    }
+
+    id := c.Param("id")
+    if err := h.configRevisions.Activate(c.Request().Context(), id); err != nil {
+        return handleError(err)
+    }
+    return c.JSON(http.StatusOK, map[string]string{"status": "activated"})
+}
+
+// GetActiveConfigRevision обрабатывает GET /api/core/config-revisions/active
+func (h *CoreHandlers) GetActiveConfigRevision(c echo.Context) error {
+    if h.configRevisions == nil {
+        return notImplemented(c, "ConfigRevisionRepository")
+    }
+
+    item, err := h.configRevisions.GetActive(c.Request().Context())
     if err != nil {
         return handleError(err)
     }
@@ -470,4 +753,39 @@ func parseOffset(raw string) int {
         return 0
     }
     return v
+}
+
+// handleError преобразует ошибки в HTTP ответы
+func handleError(err error) error {
+    switch err {
+    case repository.ErrNotFound:
+        return echo.NewHTTPError(http.StatusNotFound, "entity not found")
+    default:
+        return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+    }
+}
+
+// getNextURL генерирует URL для следующей страницы
+func getNextURL(c echo.Context, limit, offset int, total int64) interface{} {
+    if offset+limit >= int(total) {
+        return nil
+    }
+    
+    url := c.Request().URL.Path + "?limit=" + strconv.Itoa(limit) + "&offset=" + strconv.Itoa(offset)
+    return url
+}
+
+// getPreviousURL генерирует URL для предыдущей страницы
+func getPreviousURL(c echo.Context, offset int) interface{} {
+    if offset <= 0 {
+        return nil
+    }
+    
+    prevOffset := offset - 100
+    if prevOffset < 0 {
+        prevOffset = 0
+    }
+    
+    url := c.Request().URL.Path + "?offset=" + strconv.Itoa(prevOffset)
+    return url
 }
