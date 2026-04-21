@@ -383,47 +383,85 @@ type ObjectChangeFilter struct {
 }
 
 // ObjectChangeRepository операции над журналом изменений
-type ObjectChangeRepository interface {
-    GetByID(ctx context.Context, id string) (*core_entity.ObjectChange, error)
-    List(ctx context.Context, filter ObjectChangeFilter) ([]*core_entity.ObjectChange, int64, error)
-    Create(ctx context.Context, change *core_entity.ObjectChange) error
-}
+ type ObjectChangeRepository interface {
+     GetByID(ctx context.Context, id string) (*core_entity.ObjectChange, error)
+     List(ctx context.Context, filter ObjectChangeFilter) ([]*core_entity.ObjectChange, int64, error)
+     Create(ctx context.Context, change *core_entity.ObjectChange) error
+ }
 
-// ObjectTypeFilter фильтр типов объектов
-type ObjectTypeFilter struct {
-	AppLabel *string
-	Model    *string
-	Public   *bool
-	Feature  *string
-	Limit    int
-	Offset   int
-}
+// ConfigRevisionFilter фильтр ревизий конфигурации
+ type ConfigRevisionFilter struct {
+     Active        *bool
+     CreatedSince  *time.Time
+     CreatedUntil  *time.Time
+     Limit         int
+     Offset        int
+ }
 
-// ObjectTypeRepository операции над типами объектов
-type ObjectTypeRepository interface {
-	GetByID(ctx context.Context, id string) (*core_entity.ObjectType, error)
-	List(ctx context.Context, filter ObjectTypeFilter) ([]*core_entity.ObjectType, int64, error)
-	Create(ctx context.Context, ot *core_entity.ObjectType) error
-	Update(ctx context.Context, ot *core_entity.ObjectType) error
-	Delete(ctx context.Context, id string) error
-}
+// ConfigRevisionRepository операции над ревизиями конфигурации
+ type ConfigRevisionRepository interface {
+     GetByID(ctx context.Context, id string) (*core_entity.ConfigRevision, error)
+     List(ctx context.Context, filter ConfigRevisionFilter) ([]*core_entity.ConfigRevision, int64, error)
+     Create(ctx context.Context, revision *core_entity.ConfigRevision) error
+     Activate(ctx context.Context, id string) error
+     Delete(ctx context.Context, id string) error
+ }
 
-// ObjectChangeFilter фильтр записей журнала изменений
-type ObjectChangeFilter struct {
-	ChangedObjectType *string
-	ChangedObjectID   *string
-	UserID            *string
-	Action            *string
-	RequestID         *string
-	Since             *time.Time
-	Until             *time.Time
-	Limit             int
-	Offset            int
-}
+// DataSourceFilter фильтр источников данных
+ type DataSourceFilter struct {
+     Name         *string
+     Type         *string
+     Status       *string
+     Enabled      *bool
+     SyncInterval *int
+     Limit        int
+     Offset       int
+ }
 
-// ObjectChangeRepository операции над журналом изменений
-type ObjectChangeRepository interface {
-	GetByID(ctx context.Context, id string) (*core_entity.ObjectChange, error)
-	List(ctx context.Context, filter ObjectChangeFilter) ([]*core_entity.ObjectChange, int64, error)
-	Create(ctx context.Context, change *core_entity.ObjectChange) error
-}
+// DataSourceRepository операции над источниками данных
+ type DataSourceRepository interface {
+     GetByID(ctx context.Context, id string) (*core_entity.DataSource, error)
+     List(ctx context.Context, filter DataSourceFilter) ([]*core_entity.DataSource, int64, error)
+     Create(ctx context.Context, ds *core_entity.DataSource) error
+     Update(ctx context.Context, ds *core_entity.DataSource) error
+     Delete(ctx context.Context, id string) error
+     UpdateStatus(ctx context.Context, id string, status string, lastSynced *time.Time) error
+ }
+
+// DataFileFilter фильтр файлов данных
+ type DataFileFilter struct {
+     SourceID *string
+     Path     *string
+     Limit    int
+     Offset   int
+ }
+
+// DataFileRepository операции над файлами данных
+ type DataFileRepository interface {
+     GetByID(ctx context.Context, id string) (*core_entity.DataFile, error)
+     List(ctx context.Context, filter DataFileFilter) ([]*core_entity.DataFile, int64, error)
+     Create(ctx context.Context, df *core_entity.DataFile) error
+     Update(ctx context.Context, df *core_entity.DataFile) error
+     Delete(ctx context.Context, id string) error
+ }
+
+// JobFilter фильтр задач (jobs)
+ type JobFilter struct {
+     ObjectType  *string
+     ObjectID    *string
+     Status      *string
+     QueueName   *string
+     ScheduledAt *time.Time
+     Limit       int
+     Offset      int
+ }
+
+// JobRepository операции над задачами
+ type JobRepository interface {
+     GetByID(ctx context.Context, id string) (*core_entity.Job, error)
+     List(ctx context.Context, filter JobFilter) ([]*core_entity.Job, int64, error)
+     Create(ctx context.Context, job *core_entity.Job) error
+     Update(ctx context.Context, job *core_entity.Job) error
+     Delete(ctx context.Context, id string) error
+ }
+
