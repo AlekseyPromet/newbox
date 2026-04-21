@@ -23,15 +23,15 @@ const (
 // UserToken представляет прокси-модель для управления пользователями своими API токенами
 // Это расширенная версия Token с методами для account модуля
 type UserToken struct {
-	ID           types.ID      `json:"id"`
-	Version      TokenVersion  `json:"version"`
-	UserID       types.ID      `json:"user_id"`
-	Description  string        `json:"description,omitempty"`
-	Created      time.Time     `json:"created"`
-	Expires      *time.Time    `json:"expires,omitempty"`
-	LastUsed     *time.Time    `json:"last_used,omitempty"`
-	Enabled      bool          `json:"enabled"`
-	WriteEnabled bool          `json:"write_enabled"`
+	ID           types.ID     `json:"id"`
+	Version      TokenVersion `json:"version"`
+	UserID       types.ID     `json:"user_id"`
+	Description  string       `json:"description,omitempty"`
+	Created      time.Time    `json:"created"`
+	Expires      *time.Time   `json:"expires,omitempty"`
+	LastUsed     *time.Time   `json:"last_used,omitempty"`
+	Enabled      bool         `json:"enabled"`
+	WriteEnabled bool         `json:"write_enabled"`
 
 	// Поля для v1 токенов (plaintext)
 	Plaintext *string `json:"plaintext,omitempty"`

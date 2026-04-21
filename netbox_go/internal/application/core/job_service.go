@@ -40,7 +40,7 @@ type CreateJobParams struct {
 // CreateJob создаёт новую задачу
 func (s *JobService) CreateJob(ctx context.Context, params CreateJobParams) (*entity.Job, error) {
 	now := time.Now()
-	
+
 	job := &entity.Job{
 		ID:          types.ID{},
 		ObjectType:  &params.ObjectType,

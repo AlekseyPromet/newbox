@@ -3,17 +3,17 @@ package entity
 import (
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
 	"github.com/AlekseyPromet/netbox_go/internal/domain/dcim/enum"
+	"github.com/AlekseyPromet/netbox_go/pkg/types"
 )
 
 // CableTermination представляет точку подключения кабеля к компоненту устройства.
 // Может быть подключена к любому типу компонента (Interface, PowerPort, ConsolePort и т.д.)
 type CableTermination struct {
-	ID              types.ID     `json:"id"`
-	Cable           *Cable       `json:"cable"`
-	TerminationType string       `json:"termination_type"` // Тип объекта (e.g., "dcim.Interface", "dcim.PowerPort")
-	TerminationID   types.ID     `json:"termination_id"`
+	ID              types.ID `json:"id"`
+	Cable           *Cable   `json:"cable"`
+	TerminationType string   `json:"termination_type"` // Тип объекта (e.g., "dcim.Interface", "dcim.PowerPort")
+	TerminationID   types.ID `json:"termination_id"`
 }
 
 // Validate проверяет корректность данных CableTermination.
@@ -36,26 +36,26 @@ func (t *CableTermination) Validate() error {
 // Cable представляет физическое кабельное соединение между двумя точками.
 // Поддерживает различные типы кабелей и трассировку соединений.
 type Cable struct {
-	ID              types.ID         `json:"id"`
-	Created         time.Time        `json:"created"`
-	LastUpdated     time.Time        `json:"last_updated"`
-	Type            enum.CableType   `json:"type"`
-	Status          enum.CableStatus `json:"status"`
-	Label           string           `json:"label,omitempty"`
-	Color           string           `json:"color,omitempty"`
-	Length          *int32           `json:"length,omitempty"` // Длина кабеля
-	LengthUnit      string           `json:"length_unit,omitempty"` // Единица измерения (m, ft)
-	Description     string           `json:"description"`
-	CustomFields    map[string]any   `json:"custom_fields"`
-	
+	ID           types.ID         `json:"id"`
+	Created      time.Time        `json:"created"`
+	LastUpdated  time.Time        `json:"last_updated"`
+	Type         enum.CableType   `json:"type"`
+	Status       enum.CableStatus `json:"status"`
+	Label        string           `json:"label,omitempty"`
+	Color        string           `json:"color,omitempty"`
+	Length       *int32           `json:"length,omitempty"`      // Длина кабеля
+	LengthUnit   string           `json:"length_unit,omitempty"` // Единица измерения (m, ft)
+	Description  string           `json:"description"`
+	CustomFields map[string]any   `json:"custom_fields"`
+
 	// Сторона A соединения
-	A_Terminations  []CableTermination `json:"a_terminations"`
-	
+	A_Terminations []CableTermination `json:"a_terminations"`
+
 	// Сторона B соединения
-	B_Terminations  []CableTermination `json:"b_terminations"`
-	
+	B_Terminations []CableTermination `json:"b_terminations"`
+
 	// Tenant (опционально)
-	Tenant          *types.Tenant    `json:"tenant,omitempty"`
+	Tenant *types.Tenant `json:"tenant,omitempty"`
 }
 
 // Validate проверяет корректность данных Cable.

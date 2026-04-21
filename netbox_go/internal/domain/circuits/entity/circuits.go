@@ -10,18 +10,18 @@ import (
 
 // Provider представляет провайдера телекоммуникационных услуг
 type Provider struct {
-	ID           types.ID        `json:"id"`
-	Name         string          `json:"name"`
-	Slug         types.Slug      `json:"slug"`
-	ASN          *uint32         `json:"asn,omitempty"`
-	Account      string          `json:"account,omitempty"`
-	PortalURL    string          `json:"portal_url,omitempty"`
-	NOCContact   string          `json:"noc_contact,omitempty"`
-	AdminContact string          `json:"admin_contact,omitempty"`
+	ID           types.ID          `json:"id"`
+	Name         string            `json:"name"`
+	Slug         types.Slug        `json:"slug"`
+	ASN          *uint32           `json:"asn,omitempty"`
+	Account      string            `json:"account,omitempty"`
+	PortalURL    string            `json:"portal_url,omitempty"`
+	NOCContact   string            `json:"noc_contact,omitempty"`
+	AdminContact string            `json:"admin_contact,omitempty"`
 	Description  types.Description `json:"description,omitempty"`
-	Comments     types.Comments  `json:"comments,omitempty"`
-	Created      time.Time       `json:"created"`
-	Updated      time.Time       `json:"updated"`
+	Comments     types.Comments    `json:"comments,omitempty"`
+	Created      time.Time         `json:"created"`
+	Updated      time.Time         `json:"updated"`
 }
 
 // Validate проверяет корректность провайдера
@@ -37,14 +37,14 @@ func (p *Provider) Validate() error {
 
 // ProviderAccount представляет аккаунт внутри провайдера
 type ProviderAccount struct {
-	ID          types.ID        `json:"id"`
-	ProviderID  types.ID        `json:"provider_id"`
-	Account     string          `json:"account"`
-	Name        string          `json:"name,omitempty"`
+	ID          types.ID          `json:"id"`
+	ProviderID  types.ID          `json:"provider_id"`
+	Account     string            `json:"account"`
+	Name        string            `json:"name,omitempty"`
 	Description types.Description `json:"description,omitempty"`
-	Comments    types.Comments  `json:"comments,omitempty"`
-	Created     time.Time       `json:"created"`
-	Updated     time.Time       `json:"updated"`
+	Comments    types.Comments    `json:"comments,omitempty"`
+	Created     time.Time         `json:"created"`
+	Updated     time.Time         `json:"updated"`
 }
 
 // Validate проверяет корректность аккаунта провайдера
@@ -60,14 +60,14 @@ func (pa *ProviderAccount) Validate() error {
 
 // ProviderNetwork представляет сеть провайдера
 type ProviderNetwork struct {
-	ID          types.ID        `json:"id"`
-	ProviderID  types.ID        `json:"provider_id"`
-	Name        string          `json:"name"`
-	ServiceID   string          `json:"service_id,omitempty"` // Provider's service ID
+	ID          types.ID          `json:"id"`
+	ProviderID  types.ID          `json:"provider_id"`
+	Name        string            `json:"name"`
+	ServiceID   string            `json:"service_id,omitempty"` // Provider's service ID
 	Description types.Description `json:"description,omitempty"`
-	Comments    types.Comments  `json:"comments,omitempty"`
-	Created     time.Time       `json:"created"`
-	Updated     time.Time       `json:"updated"`
+	Comments    types.Comments    `json:"comments,omitempty"`
+	Created     time.Time         `json:"created"`
+	Updated     time.Time         `json:"updated"`
 }
 
 // Validate проверяет корректность сети провайдера
@@ -83,14 +83,14 @@ func (pn *ProviderNetwork) Validate() error {
 
 // CircuitType представляет тип цепи
 type CircuitType struct {
-	ID          types.ID        `json:"id"`
-	Name        string          `json:"name"`
-	Slug        types.Slug      `json:"slug"`
-	Color       string          `json:"color,omitempty"`
+	ID          types.ID          `json:"id"`
+	Name        string            `json:"name"`
+	Slug        types.Slug        `json:"slug"`
+	Color       string            `json:"color,omitempty"`
 	Description types.Description `json:"description,omitempty"`
-	Comments    types.Comments  `json:"comments,omitempty"`
-	Created     time.Time       `json:"created"`
-	Updated     time.Time       `json:"updated"`
+	Comments    types.Comments    `json:"comments,omitempty"`
+	Created     time.Time         `json:"created"`
+	Updated     time.Time         `json:"updated"`
 }
 
 // Validate проверяет корректность типа цепи
@@ -106,24 +106,24 @@ func (ct *CircuitType) Validate() error {
 
 // Circuit представляет телекоммуникационную цепь
 type Circuit struct {
-	ID                types.ID         `json:"id"`
-	CID               string           `json:"cid"` // Circuit ID (unique identifier)
-	ProviderID        types.ID         `json:"provider_id"`
-	ProviderAccountID *types.ID        `json:"provider_account_id,omitempty"`
-	TypeID            types.ID         `json:"type_id"`
+	ID                types.ID           `json:"id"`
+	CID               string             `json:"cid"` // Circuit ID (unique identifier)
+	ProviderID        types.ID           `json:"provider_id"`
+	ProviderAccountID *types.ID          `json:"provider_account_id,omitempty"`
+	TypeID            types.ID           `json:"type_id"`
 	Status            enum.CircuitStatus `json:"status"`
-	TenantID          *types.ID        `json:"tenant_id,omitempty"`
-	InstallDate       *time.Time       `json:"install_date,omitempty"`
-	TerminationDate   *time.Time       `json:"termination_date,omitempty"`
-	CommitRate        *int32           `json:"commit_rate,omitempty"` // Kbps
-	Distance          *float64         `json:"distance,omitempty"`
-	DistanceUnit      *string          `json:"distance_unit,omitempty"` // km, m, mi, ft
-	Description       types.Description `json:"description,omitempty"`
-	Comments          types.Comments   `json:"comments,omitempty"`
-	Created           time.Time        `json:"created"`
-	Updated           time.Time        `json:"updated"`
-	TerminationAID    *types.ID        `json:"termination_a_id,omitempty"`
-	TerminationZID    *types.ID        `json:"termination_z_id,omitempty"`
+	TenantID          *types.ID          `json:"tenant_id,omitempty"`
+	InstallDate       *time.Time         `json:"install_date,omitempty"`
+	TerminationDate   *time.Time         `json:"termination_date,omitempty"`
+	CommitRate        *int32             `json:"commit_rate,omitempty"` // Kbps
+	Distance          *float64           `json:"distance,omitempty"`
+	DistanceUnit      *string            `json:"distance_unit,omitempty"` // km, m, mi, ft
+	Description       types.Description  `json:"description,omitempty"`
+	Comments          types.Comments     `json:"comments,omitempty"`
+	Created           time.Time          `json:"created"`
+	Updated           time.Time          `json:"updated"`
+	TerminationAID    *types.ID          `json:"termination_a_id,omitempty"`
+	TerminationZID    *types.ID          `json:"termination_z_id,omitempty"`
 }
 
 // Validate проверяет корректность цепи
@@ -160,18 +160,18 @@ func (c *Circuit) Clean(providerAccount *ProviderAccount) error {
 
 // CircuitTermination представляет точку завершения цепи
 type CircuitTermination struct {
-	ID                types.ID        `json:"id"`
-	CircuitID         types.ID        `json:"circuit_id"`
-	TermSide          enum.CircuitTermSide `json:"term_side"` // A or Z side
-	TerminationType   string          `json:"termination_type,omitempty"`
-	TerminationID     *types.ID       `json:"termination_id,omitempty"`
-	PortSpeed         *int32          `json:"port_speed,omitempty"` // Kbps
-	UpstreamSpeed     *int32          `json:"upstream_speed,omitempty"` // Kbps for asymmetric circuits
-	XConnectID        string          `json:"xconnect_id,omitempty"` // Cross-connect ID
-	PPInfo            string          `json:"pp_info,omitempty"` // Patch panel/port info
-	Description       types.Description `json:"description,omitempty"`
-	Created           time.Time       `json:"created"`
-	Updated           time.Time       `json:"updated"`
+	ID              types.ID             `json:"id"`
+	CircuitID       types.ID             `json:"circuit_id"`
+	TermSide        enum.CircuitTermSide `json:"term_side"` // A or Z side
+	TerminationType string               `json:"termination_type,omitempty"`
+	TerminationID   *types.ID            `json:"termination_id,omitempty"`
+	PortSpeed       *int32               `json:"port_speed,omitempty"`     // Kbps
+	UpstreamSpeed   *int32               `json:"upstream_speed,omitempty"` // Kbps for asymmetric circuits
+	XConnectID      string               `json:"xconnect_id,omitempty"`    // Cross-connect ID
+	PPInfo          string               `json:"pp_info,omitempty"`        // Patch panel/port info
+	Description     types.Description    `json:"description,omitempty"`
+	Created         time.Time            `json:"created"`
+	Updated         time.Time            `json:"updated"`
 	// Cached associations for filtering
 	ProviderNetworkID *types.ID `json:"provider_network_id,omitempty"`
 	RegionID          *types.ID `json:"region_id,omitempty"`
@@ -236,14 +236,14 @@ func (ct *CircuitTermination) CacheRelatedObjects(terminationType string, termin
 
 // CircuitGroup представляет административную группу цепей
 type CircuitGroup struct {
-	ID          types.ID        `json:"id"`
-	Name        string          `json:"name"`
-	Slug        types.Slug      `json:"slug"`
-	TenantID    *types.ID       `json:"tenant_id,omitempty"`
+	ID          types.ID          `json:"id"`
+	Name        string            `json:"name"`
+	Slug        types.Slug        `json:"slug"`
+	TenantID    *types.ID         `json:"tenant_id,omitempty"`
 	Description types.Description `json:"description,omitempty"`
-	Comments    types.Comments  `json:"comments,omitempty"`
-	Created     time.Time       `json:"created"`
-	Updated     time.Time       `json:"updated"`
+	Comments    types.Comments    `json:"comments,omitempty"`
+	Created     time.Time         `json:"created"`
+	Updated     time.Time         `json:"updated"`
 }
 
 // Validate проверяет корректность группы цепей
@@ -259,13 +259,13 @@ func (cg *CircuitGroup) Validate() error {
 
 // CircuitGroupAssignment представляет привязку цепи к группе
 type CircuitGroupAssignment struct {
-	ID        types.ID              `json:"id"`
-	MemberType string               `json:"member_type"`
-	MemberID  types.ID              `json:"member_id"`
-	GroupID   types.ID              `json:"group_id"`
-	Priority  *enum.CircuitPriority `json:"priority,omitempty"`
-	Created   time.Time             `json:"created"`
-	Updated   time.Time             `json:"updated"`
+	ID         types.ID              `json:"id"`
+	MemberType string                `json:"member_type"`
+	MemberID   types.ID              `json:"member_id"`
+	GroupID    types.ID              `json:"group_id"`
+	Priority   *enum.CircuitPriority `json:"priority,omitempty"`
+	Created    time.Time             `json:"created"`
+	Updated    time.Time             `json:"updated"`
 }
 
 // Validate проверяет корректность привязки
@@ -289,14 +289,14 @@ func (cga *CircuitGroupAssignment) Validate() error {
 
 // VirtualCircuitType представляет тип виртуальной цепи
 type VirtualCircuitType struct {
-	ID          types.ID        `json:"id"`
-	Name        string          `json:"name"`
-	Slug        types.Slug      `json:"slug"`
-	Color       string          `json:"color,omitempty"`
+	ID          types.ID          `json:"id"`
+	Name        string            `json:"name"`
+	Slug        types.Slug        `json:"slug"`
+	Color       string            `json:"color,omitempty"`
 	Description types.Description `json:"description,omitempty"`
-	Comments    types.Comments  `json:"comments,omitempty"`
-	Created     time.Time       `json:"created"`
-	Updated     time.Time       `json:"updated"`
+	Comments    types.Comments    `json:"comments,omitempty"`
+	Created     time.Time         `json:"created"`
+	Updated     time.Time         `json:"updated"`
 }
 
 // Validate проверяет корректность типа виртуальной цепи
@@ -312,17 +312,17 @@ func (vct *VirtualCircuitType) Validate() error {
 
 // VirtualCircuit представляет виртуальную цепь
 type VirtualCircuit struct {
-	ID                types.ID         `json:"id"`
-	CID               string           `json:"cid"`
-	ProviderNetworkID types.ID         `json:"provider_network_id"`
-	ProviderAccountID *types.ID        `json:"provider_account_id,omitempty"`
-	TypeID            types.ID         `json:"type_id"`
+	ID                types.ID           `json:"id"`
+	CID               string             `json:"cid"`
+	ProviderNetworkID types.ID           `json:"provider_network_id"`
+	ProviderAccountID *types.ID          `json:"provider_account_id,omitempty"`
+	TypeID            types.ID           `json:"type_id"`
 	Status            enum.CircuitStatus `json:"status"`
-	TenantID          *types.ID        `json:"tenant_id,omitempty"`
-	Description       types.Description `json:"description,omitempty"`
-	Comments          types.Comments   `json:"comments,omitempty"`
-	Created           time.Time        `json:"created"`
-	Updated           time.Time        `json:"updated"`
+	TenantID          *types.ID          `json:"tenant_id,omitempty"`
+	Description       types.Description  `json:"description,omitempty"`
+	Comments          types.Comments     `json:"comments,omitempty"`
+	Created           time.Time          `json:"created"`
+	Updated           time.Time          `json:"updated"`
 }
 
 // Validate проверяет корректность виртуальной цепи
@@ -367,13 +367,13 @@ func (vc *VirtualCircuit) Provider(providerNetwork *ProviderNetwork) *Provider {
 
 // VirtualCircuitTermination представляет точку завершения виртуальной цепи
 type VirtualCircuitTermination struct {
-	ID             types.ID                        `json:"id"`
-	VirtualCircuitID types.ID                      `json:"virtual_circuit_id"`
-	Role           enum.VirtualCircuitTerminationRole `json:"role"`
-	InterfaceID    types.ID                        `json:"interface_id"`
-	Description    types.Description               `json:"description,omitempty"`
-	Created        time.Time                       `json:"created"`
-	Updated        time.Time                       `json:"updated"`
+	ID               types.ID                           `json:"id"`
+	VirtualCircuitID types.ID                           `json:"virtual_circuit_id"`
+	Role             enum.VirtualCircuitTerminationRole `json:"role"`
+	InterfaceID      types.ID                           `json:"interface_id"`
+	Description      types.Description                  `json:"description,omitempty"`
+	Created          time.Time                          `json:"created"`
+	Updated          time.Time                          `json:"updated"`
 }
 
 // Validate проверяет корректность точки завершения виртуальной цепи
@@ -406,7 +406,7 @@ type Region struct {
 
 // SiteGroup - заглушка для dcim.SiteGroup
 type SiteGroup struct {
-	ID      types.ID `json:"id"`
+	ID      types.ID  `json:"id"`
 	GroupID *types.ID `json:"group_id,omitempty"`
 }
 

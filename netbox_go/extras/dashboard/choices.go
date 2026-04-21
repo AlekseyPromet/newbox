@@ -5,19 +5,19 @@ package dashboard
 type DashboardWidgetColorChoice string
 
 const (
-	DashboardWidgetColorBlue    DashboardWidgetColorChoice = "blue"
-	DashboardWidgetColorIndigo  DashboardWidgetColorChoice = "indigo"
-	DashboardWidgetColorPurple  DashboardWidgetColorChoice = "purple"
-	DashboardWidgetColorPink    DashboardWidgetColorChoice = "pink"
-	DashboardWidgetColorRed     DashboardWidgetColorChoice = "red"
-	DashboardWidgetColorOrange  DashboardWidgetColorChoice = "orange"
-	DashboardWidgetColorYellow  DashboardWidgetColorChoice = "yellow"
-	DashboardWidgetColorGreen   DashboardWidgetColorChoice = "green"
-	DashboardWidgetColorTeal    DashboardWidgetColorChoice = "teal"
-	DashboardWidgetColorCyan    DashboardWidgetColorChoice = "cyan"
-	DashboardWidgetColorGray    DashboardWidgetColorChoice = "gray"
-	DashboardWidgetColorBlack   DashboardWidgetColorChoice = "black"
-	DashboardWidgetColorWhite   DashboardWidgetColorChoice = "white"
+	DashboardWidgetColorBlue   DashboardWidgetColorChoice = "blue"
+	DashboardWidgetColorIndigo DashboardWidgetColorChoice = "indigo"
+	DashboardWidgetColorPurple DashboardWidgetColorChoice = "purple"
+	DashboardWidgetColorPink   DashboardWidgetColorChoice = "pink"
+	DashboardWidgetColorRed    DashboardWidgetColorChoice = "red"
+	DashboardWidgetColorOrange DashboardWidgetColorChoice = "orange"
+	DashboardWidgetColorYellow DashboardWidgetColorChoice = "yellow"
+	DashboardWidgetColorGreen  DashboardWidgetColorChoice = "green"
+	DashboardWidgetColorTeal   DashboardWidgetColorChoice = "teal"
+	DashboardWidgetColorCyan   DashboardWidgetColorChoice = "cyan"
+	DashboardWidgetColorGray   DashboardWidgetColorChoice = "gray"
+	DashboardWidgetColorBlack  DashboardWidgetColorChoice = "black"
+	DashboardWidgetColorWhite  DashboardWidgetColorChoice = "white"
 )
 
 // DashboardWidgetColorChoices содержит все доступные варианты цветов
