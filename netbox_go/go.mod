@@ -1,12 +1,12 @@
 module github.com/AlekseyPromet/netbox_go
 
-go 1.26.2
+go 1.19
 
 require (
-	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.9.2
+	github.com/google/uuid v1.3.1
+	github.com/jackc/pgx/v5 v5.5.5
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.8.4
 	go.etcd.io/etcd/client/v3 v3.5.12
 )
 

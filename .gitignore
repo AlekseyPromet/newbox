@@ -1,51 +1,61 @@
 ```
-# Go build artifacts
+# Go-specific ignores
 *.o
 *.a
+*.out
+*.test
+*.prof
+*.db
+*.pid
+*.seed
+*.cache
 *.so
 *.dylib
 *.dll
-*.exe
-*.out
 
-# Go cache and tools
-go.mod
-go.sum
-vendor/
-*.mod
-*.sum
-
-# Build directories
+# Build artifacts
 bin/
-pkg/
-target/
+_dist/
+_output/
+_coverage/
 
 # Dependencies
 vendor/
+Godeps/
 
-# Logs and temp files
-*.log
-*.tmp
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editors
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# OS generated files
+# System files
 .DS_Store
 Thumbs.db
 
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+*.env.*
+
 # Coverage
+.coverage
 coverage/
 htmlcov/
-.coverage
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Database
+*.db
+*.db-journal
 
 # Compressed files
 *.zip
