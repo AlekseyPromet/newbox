@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/lib/pq"
+
 	core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
 	"github.com/AlekseyPromet/netbox_go/internal/repository"
 	"github.com/AlekseyPromet/netbox_go/pkg/types"
@@ -231,4 +233,95 @@ func (r *DataFileRepositoryPostgres) DeleteBySourceID(ctx context.Context, sourc
 	}
 
 	return nil
+}
+
+// BulkCreate создает несколько файлов данных в одной транзакции
+func (r *DataFileRepositoryPostgres) BulkCreate(ctx context.Context, files []*core_entity.DataFile) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	query := `
+		INSERT INTO core_data_files (id, source_id, path, size, hash, data, created, updated)
+		VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+	`
+
+	for _, df := range files {
+		var dataJSON []byte
+		if df.Data != nil {
+			dataJSON = df.Data
+		}
+
+		_, err := tx.ExecContext(ctx, query,
+			df.ID.String(), df.SourceID.String(), df.Path, df.Size, df.Hash, dataJSON,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create data file: %w", err)
+		}
+	}
+
+	return tx.Commit()
+}
+
+// BulkUpdate обновляет несколько файлов данных в одной транзакции
+func (r *DataFileRepositoryPostgres) BulkUpdate(ctx context.Context, files []*core_entity.DataFile) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	query := `
+		UPDATE core_data_files
+		SET source_id = $1, path = $2, size = $3, hash = $4, data = $5, updated = NOW()
+		WHERE id = $6
+	`
+
+	for _, df := range files {
+		var dataJSON []byte
+		if df.Data != nil {
+			dataJSON = df.Data
+		}
+
+		result, err := tx.ExecContext(ctx, query,
+			df.SourceID.String(), df.Path, df.Size, df.Hash, dataJSON, df.ID.String(),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to update data file: %w", err)
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("failed to get rows affected: %w", err)
+		}
+		if rowsAffected == 0 {
+			return types.ErrNotFound
+		}
+	}
+
+	return tx.Commit()
+}
+
+// BulkDelete удаляет несколько файлов данных в одной транзакции (soft delete)
+func (r *DataFileRepositoryPostgres) BulkDelete(ctx context.Context, ids []string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	query := `UPDATE core_data_files SET deleted_at = NOW() WHERE id = ANY($1)`
+
+	_, err = tx.ExecContext(ctx, query, pq.Array(ids))
+	if err != nil {
+		return fmt.Errorf("failed to bulk delete data files: %w", err)
+	}
+
+	return tx.Commit()
 }

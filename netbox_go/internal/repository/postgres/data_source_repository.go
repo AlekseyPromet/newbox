@@ -9,6 +9,7 @@ import (
 	"time"
 
 	core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
+	core_enum "github.com/AlekseyPromet/netbox_go/internal/domain/core/enum"
 	"github.com/AlekseyPromet/netbox_go/internal/repository"
 	"github.com/AlekseyPromet/netbox_go/pkg/types"
 )
@@ -268,4 +269,82 @@ func (r *DataSourceRepositoryPostgres) UpdateStatus(ctx context.Context, id stri
 	}
 
 	return nil
+}
+
+// Sync помечает источник данных как синхронизируемый
+func (r *DataSourceRepositoryPostgres) Sync(ctx context.Context, id string) error {
+	query := `
+		UPDATE core_data_sources
+		SET status = $1, updated = NOW()
+		WHERE id = $2
+	`
+
+	result, err := r.db.ExecContext(ctx, query, core_enum.DataSourceStatusSyncing, id)
+	if err != nil {
+		return fmt.Errorf("failed to sync data source: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return types.ErrNotFound
+	}
+
+	return nil
+}
+
+// Exists проверяет существование источника данных по имени
+func (r *DataSourceRepositoryPostgres) Exists(ctx context.Context, name string) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM core_data_sources WHERE name = $1 AND deleted_at IS NULL)`
+
+	var exists bool
+	err := r.db.QueryRowContext(ctx, query, name).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check data source existence: %w", err)
+	}
+
+	return exists, nil
+}
+
+// GetByName получает источник данных по имени
+func (r *DataSourceRepositoryPostgres) GetByName(ctx context.Context, name string) (*core_entity.DataSource, error) {
+	query := `
+		SELECT id, name, type, source_url, status, enabled, sync_interval, ignore_rules,
+		       parameters, last_synced, created, updated
+		FROM core_data_sources
+		WHERE name = $1 AND deleted_at IS NULL
+	`
+
+	var ds core_entity.DataSource
+	var ignoreRulesJSON, parametersJSON []byte
+	var lastSynced sql.NullTime
+
+	err := r.db.QueryRowContext(ctx, query, name).Scan(
+		&ds.ID, &ds.Name, &ds.Type, &ds.SourceURL, &ds.Status, &ds.Enabled,
+		&ds.SyncInterval, &ignoreRulesJSON, &parametersJSON, &lastSynced,
+		&ds.Created, &ds.Updated,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, types.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get data source by name: %w", err)
+	}
+
+	if ignoreRulesJSON != nil {
+		if err := json.Unmarshal(ignoreRulesJSON, &ds.IgnoreRules); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal ignore rules: %w", err)
+		}
+	}
+	if parametersJSON != nil {
+		ds.Parameters = json.RawMessage(parametersJSON)
+	}
+	if lastSynced.Valid {
+		ds.LastSynced = &lastSynced.Time
+	}
+
+	return &ds, nil
 }

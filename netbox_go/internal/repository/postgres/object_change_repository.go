@@ -266,3 +266,72 @@ func (r *ObjectChangeRepositoryPostgres) LogChange(ctx context.Context, action t
 
 	return r.Create(ctx, change)
 }
+
+// GetChangesForObject получает историю изменений конкретного объекта
+func (r *ObjectChangeRepositoryPostgres) GetChangesForObject(ctx context.Context, objectType string, objectID string, limit int, offset int) ([]*core_entity.ObjectChange, int64, error) {
+	query := `
+		SELECT id, time, user_id, request_id, action, changed_object_type, changed_object_id,
+		       object_repr, object_data, related_object_type, related_object_id, related_object_repr
+		FROM core_object_changes
+		WHERE changed_object_type = $1 AND changed_object_id = $2 AND deleted_at IS NULL
+	`
+	countQuery := `SELECT COUNT(*) FROM core_object_changes WHERE changed_object_type = $1 AND changed_object_id = $2 AND deleted_at IS NULL`
+
+	// Получаем общее количество
+	var total int64
+	err := r.db.QueryRowContext(ctx, countQuery, objectType, objectID).Scan(&total)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count object changes: %w", err)
+	}
+
+	query += " ORDER BY time DESC"
+	query += fmt.Sprintf(" LIMIT $3 OFFSET $4")
+
+	rows, err := r.db.QueryContext(ctx, query, objectType, objectID, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list object changes: %w", err)
+	}
+	defer rows.Close()
+
+	var changes []*core_entity.ObjectChange
+	for rows.Next() {
+		var oc core_entity.ObjectChange
+		var userID sql.NullString
+		var requestID sql.NullString
+		var relatedObjectType, relatedObjectID, relatedObjectRepr sql.NullString
+		var objectDataJSON []byte
+
+		err := rows.Scan(
+			&oc.ID, &oc.Time, &userID, &requestID, &oc.Action,
+			&oc.ChangedObjectType, &oc.ChangedObjectID, &oc.ObjectRepr,
+			&objectDataJSON, &relatedObjectType, &relatedObjectID, &relatedObjectRepr,
+		)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to scan object change: %w", err)
+		}
+
+		if userID.Valid {
+			uid, _ := types.ParseID(userID.String)
+			oc.UserID = &uid
+		}
+		if requestID.Valid {
+			oc.RequestID = &requestID.String
+		}
+		if objectDataJSON != nil {
+			oc.ObjectData = json.RawMessage(objectDataJSON)
+		}
+		if relatedObjectType.Valid {
+			oc.RelatedObjectType = &relatedObjectType.String
+		}
+		if relatedObjectID.Valid {
+			oc.RelatedObjectID = &relatedObjectID.String
+		}
+		if relatedObjectRepr.Valid {
+			oc.RelatedObjectRepr = &relatedObjectRepr.String
+		}
+
+		changes = append(changes, &oc)
+	}
+
+	return changes, total, nil
+}

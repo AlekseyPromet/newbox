@@ -200,3 +200,75 @@ func (r *ConfigRevisionRepositoryPostgres) Delete(ctx context.Context, id string
 
 	return nil
 }
+
+// GetActive получает активную ревизию конфигурации
+func (r *ConfigRevisionRepositoryPostgres) GetActive(ctx context.Context) (*core_entity.ConfigRevision, error) {
+	query := `
+		SELECT id, created, active, comment, data
+		FROM core_config_revisions
+		WHERE active = TRUE AND deleted_at IS NULL
+		ORDER BY created DESC
+		LIMIT 1
+	`
+
+	var revision core_entity.ConfigRevision
+	var comment sql.NullString
+	var dataJSON []byte
+
+	err := r.db.QueryRowContext(ctx, query).Scan(
+		&revision.ID, &revision.Created, &revision.Active,
+		&comment, &dataJSON,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, types.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get active config revision: %w", err)
+	}
+
+	if comment.Valid {
+		revision.Comment = comment.String
+	}
+	if dataJSON != nil {
+		revision.Data = json.RawMessage(dataJSON)
+	}
+
+	return &revision, nil
+}
+
+// GetLatest получает последнюю созданную ревизию конфигурации
+func (r *ConfigRevisionRepositoryPostgres) GetLatest(ctx context.Context) (*core_entity.ConfigRevision, error) {
+	query := `
+		SELECT id, created, active, comment, data
+		FROM core_config_revisions
+		WHERE deleted_at IS NULL
+		ORDER BY created DESC
+		LIMIT 1
+	`
+
+	var revision core_entity.ConfigRevision
+	var comment sql.NullString
+	var dataJSON []byte
+
+	err := r.db.QueryRowContext(ctx, query).Scan(
+		&revision.ID, &revision.Created, &revision.Active,
+		&comment, &dataJSON,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, types.ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get latest config revision: %w", err)
+	}
+
+	if comment.Valid {
+		revision.Comment = comment.String
+	}
+	if dataJSON != nil {
+		revision.Data = json.RawMessage(dataJSON)
+	}
+
+	return &revision, nil
+}

@@ -367,6 +367,10 @@ type ObjectTypeRepository interface {
     Create(ctx context.Context, ot *core_entity.ObjectType) error
     Update(ctx context.Context, ot *core_entity.ObjectType) error
     Delete(ctx context.Context, id string) error
+    GetByAppAndModel(ctx context.Context, appLabel string, model string) (*core_entity.ObjectType, error)
+    GetForModel(ctx context.Context, model string) ([]*core_entity.ObjectType, error)
+    Public() []string
+    WithFeature(feature string) []string
 }
 
 // ObjectChangeFilter фильтр записей журнала изменений
@@ -387,6 +391,8 @@ type ObjectChangeFilter struct {
      GetByID(ctx context.Context, id string) (*core_entity.ObjectChange, error)
      List(ctx context.Context, filter ObjectChangeFilter) ([]*core_entity.ObjectChange, int64, error)
      Create(ctx context.Context, change *core_entity.ObjectChange) error
+     LogChange(ctx context.Context, action types.Status, objectType string, objectID string, objectRepr string, objectData interface{}, userID *types.ID, requestID *string) error
+     GetChangesForObject(ctx context.Context, objectType string, objectID string, limit int, offset int) ([]*core_entity.ObjectChange, int64, error)
  }
 
 // ConfigRevisionFilter фильтр ревизий конфигурации
@@ -405,6 +411,8 @@ type ObjectChangeFilter struct {
      Create(ctx context.Context, revision *core_entity.ConfigRevision) error
      Activate(ctx context.Context, id string) error
      Delete(ctx context.Context, id string) error
+     GetActive(ctx context.Context) (*core_entity.ConfigRevision, error)
+     GetLatest(ctx context.Context) (*core_entity.ConfigRevision, error)
  }
 
 // DataSourceFilter фильтр источников данных
@@ -426,6 +434,9 @@ type ObjectChangeFilter struct {
      Update(ctx context.Context, ds *core_entity.DataSource) error
      Delete(ctx context.Context, id string) error
      UpdateStatus(ctx context.Context, id string, status string, lastSynced *time.Time) error
+     Sync(ctx context.Context, id string) error
+     Exists(ctx context.Context, name string) (bool, error)
+     GetByName(ctx context.Context, name string) (*core_entity.DataSource, error)
  }
 
 // DataFileFilter фильтр файлов данных
@@ -443,6 +454,9 @@ type ObjectChangeFilter struct {
      Create(ctx context.Context, df *core_entity.DataFile) error
      Update(ctx context.Context, df *core_entity.DataFile) error
      Delete(ctx context.Context, id string) error
+     BulkCreate(ctx context.Context, files []*core_entity.DataFile) error
+     BulkUpdate(ctx context.Context, files []*core_entity.DataFile) error
+     BulkDelete(ctx context.Context, ids []string) error
  }
 
 // JobFilter фильтр задач (jobs)
@@ -463,5 +477,8 @@ type ObjectChangeFilter struct {
      Create(ctx context.Context, job *core_entity.Job) error
      Update(ctx context.Context, job *core_entity.Job) error
      Delete(ctx context.Context, id string) error
+     Start(ctx context.Context, id string, queueName string, jobID string) error
+     Complete(ctx context.Context, id string, hasError bool, errorMsg *string) error
+     Log(ctx context.Context, id string, message string) error
  }
 
