@@ -647,9 +647,9 @@ CREATE INDEX idx_managedfile_root_path ON core_managedfile(file_root, file_path)
 
 ---
 
-### Этап 6: Система фоновых задач на etcd
+### Этап 6: Система фоновых задач на etcd ✅ (100%)
 
-#### 6.1 Архитектура хранения задач в etcd
+#### 6.1 Архитектура хранения задач в etcd ✅
 
 Создать `internal/pkg/taskqueue/etcd_queue.go`:
 
@@ -960,7 +960,7 @@ func (q *EtcdQueue) CleanupStaleTasks(ctx context.Context, timeout time.Duration
 }
 ```
 
-#### 6.2 Worker пул для обработки задач
+#### 6.2 Worker пул для обработки задач ✅
 
 Создать `internal/pkg/taskqueue/worker_pool.go`:
 
@@ -1107,7 +1107,7 @@ func (p *WorkerPool) RegisterHandler(taskType string, handler TaskHandlerFunc) {
 }
 ```
 
-#### 6.3 Интеграция с Job моделью
+#### 6.3 Интеграция с Job моделью ✅
 
 Создать `internal/application/core/job_service.go`:
 
