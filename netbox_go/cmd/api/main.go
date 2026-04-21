@@ -77,6 +77,7 @@ func main() {
 	dataSources.POST("", coreHandler.CreateDataSource)
 	dataSources.PUT("/:id", coreHandler.UpdateDataSource)
 	dataSources.DELETE("/:id", coreHandler.DeleteDataSource)
+	dataSources.POST("/:id/sync", coreHandler.SyncDataSource)
 
 	dataFiles := core.Group("/data-files")
 	dataFiles.GET("", coreHandler.ListDataFiles)

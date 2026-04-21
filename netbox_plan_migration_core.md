@@ -62,27 +62,27 @@
 | `ConfigRevision` | `config.py` | Ревизии конфига | Средний | ✅ Реализовано |
 | `ManagedFile` | `files.py` | Управляемые файлы | Средний | ⏳ Не реализовано (4ч) |
 
-#### 1.2 API ViewSets (`netbox/core/api/views.py`) ✅ (85%)
+#### 1.2 API ViewSets (`netbox/core/api/views.py`) ✅ (100%)
 
 | Endpoint | Методы | Описание | Статус |
 |----------|--------|----------|--------|
 | `/api/core/data-sources/` | GET, POST | Список/создание источников | ✅ Реализовано |
 | `/api/core/data-sources/:id/` | GET, PUT, DELETE | Операции с источником | ✅ Реализовано |
-| `/api/core/data-sources/:id/sync/` | POST | Синхронизация источника | ⏳ Не реализовано (2ч) |
+| `/api/core/data-sources/:id/sync/` | POST | Синхронизация источника | ✅ Реализовано |
 | `/api/core/data-files/` | GET | Список файлов | ✅ Реализовано |
 | `/api/core/data-files/:id/` | GET | Детали файла | ✅ Реализовано |
-| `/api/core/data-files/` | POST | Создание файла | ⏳ Не реализовано (2ч) |
-| `/api/core/data-files/:id/` | PUT, DELETE | Обновление/удаление файла | ⏳ Не реализовано (2ч) |
+| `/api/core/data-files/` | POST | Создание файла | ✅ Реализовано |
+| `/api/core/data-files/:id/` | PUT, DELETE | Обновление/удаление файла | ✅ Реализовано |
 | `/api/core/jobs/` | GET | Список задач | ✅ Реализовано |
 | `/api/core/jobs/:id/` | GET | Детали задачи | ✅ Реализовано |
-| `/api/core/jobs/` | POST | Создание задачи | ⏳ Не реализовано (3ч) |
+| `/api/core/jobs/` | POST | Создание задачи | ✅ Реализовано |
 | `/api/core/object-changes/` | GET | Список изменений | ✅ Реализовано |
 | `/api/core/object-changes/:id/` | GET | Детали изменения | ✅ Реализовано |
-| `/api/core/object-changes/log` | POST | Логирование изменения | ⏳ Не реализовано (2ч) |
+| `/api/core/object-changes/log` | POST | Логирование изменения | ✅ Реализовано |
 | `/api/core/object-types/` | GET | Список типов объектов | ✅ Реализовано |
 | `/api/core/object-types/:id/` | GET | Детали типа | ✅ Реализовано |
-| `/api/core/config-revisions/active` | GET | Активная ревизия | ⏳ Не реализовано (2ч) |
-| `/api/core/config-revisions/:id/activate` | POST | Активация ревизии | ⏳ Не реализовано (2ч) |
+| `/api/core/config-revisions/active` | GET | Активная ревизия | ✅ Реализовано |
+| `/api/core/config-revisions/:id/activate` | POST | Активация ревизии | ✅ Реализовано |
 | `/api/core/background-*` | GET | RQ заглушки | ✅ Заглушки реализованы |
 
 #### 1.3 Выборы (choices) (`netbox/core/choices.py`) ✅ (100%)
@@ -463,11 +463,11 @@ UPDATE core_configrevision SET active = true WHERE id = $1;
 
 ---
 
-### Этап 4: Расширение HTTP обработчиков ⏳ (35%)
+### Этап 4: Расширение HTTP обработчиков ✅ (100%)
 
-#### 4.1 Обновить `internal/delivery/http/handlers/core_handler.go` ⏳
+#### 4.1 Обновить `internal/delivery/http/handlers/core_handler.go` ✅
 
-**Реализованные методы (8 из 15):**
+**Реализованные методы (15 из 15):**
 - ✅ `ListDataSources()` — GET /api/core/data-sources
 - ✅ `GetDataSource()` — GET /api/core/data-sources/:id
 - ✅ `CreateDataSource()` — POST /api/core/data-sources
@@ -483,28 +483,28 @@ UPDATE core_configrevision SET active = true WHERE id = $1;
 - ✅ `GetObjectType()` — GET /api/core/object-types/:id
 - ✅ Заглушки Background (8 методов)
 
-**Требуется реализовать (7 методов):**
-- ⏳ `SyncDataSource()` — POST /api/core/data-sources/:id/sync (2ч)
-- ⏳ `CreateDataFile()` — POST /api/core/data-files (2ч)
-- ⏳ `UpdateDataFile()` — PUT /api/core/data-files/:id (2ч)
-- ⏳ `DeleteDataFile()` — DELETE /api/core/data-files/:id (1ч)
-- ⏳ `CreateJob()` — POST /api/core/jobs (3ч)
-- ⏳ `LogObjectChange()` — POST /api/core/object-changes/log (2ч)
-- ⏳ `GetActiveConfigRevision()` — GET /api/core/config-revisions/active (2ч)
-- ⏳ `ActivateConfigRevision()` — POST /api/core/config-revisions/:id/activate (2ч)
+**Реализовано (7 методов):**
+- ✅ `SyncDataSource()` — POST /api/core/data-sources/:id/sync (2ч)
+- ✅ `CreateDataFile()` — POST /api/core/data-files (2ч)
+- ✅ `UpdateDataFile()` — PUT /api/core/data-files/:id (2ч)
+- ✅ `DeleteDataFile()` — DELETE /api/core/data-files/:id (1ч)
+- ✅ `CreateJob()` — POST /api/core/jobs (3ч)
+- ✅ `LogObjectChange()` — POST /api/core/object-changes/log (2ч)
+- ✅ `GetActiveConfigRevision()` — GET /api/core/config-revisions/active (2ч)
+- ✅ `ActivateConfigRevision()` — POST /api/core/config-revisions/:id/activate (2ч)
 
-**Оценка этапа:** 35% завершено (8/15 методов + заглушки)
+**Оценка этапа:** 100% завершено (15/15 методов + заглушки)
 
-#### 4.2 Регистрация маршрутов ⏳
+#### 4.2 Регистрация маршрутов ✅
 
-Требуется обновить роутер в `cmd/api/main.go`:
-- ⏳ Добавить маршрут POST `/data-sources/:id/sync` (1ч)
-- ⏳ Добавить маршруты для Data Files (POST, PUT, DELETE) (1ч)
-- ⏳ Добавить маршрут POST `/jobs` (1ч)
-- ⏳ Добавить маршрут POST `/object-changes/log` (1ч)
-- ⏳ Добавить маршруты для Config Revisions (2ч)
+Обновлен роутер в `cmd/api/main.go`:
+- ✅ Добавить маршрут POST `/data-sources/:id/sync` (1ч)
+- ✅ Добавить маршруты для Data Files (POST, PUT, DELETE) (1ч)
+- ✅ Добавить маршрут POST `/jobs` (1ч)
+- ✅ Добавить маршрут POST `/object-changes/log` (1ч)
+- ✅ Добавить маршруты для Config Revisions (2ч)
 
-**Оценка этапа:** 0% завершено
+**Оценка этапа:** 100% завершено
 
 ---
 

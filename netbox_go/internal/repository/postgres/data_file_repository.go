@@ -27,7 +27,7 @@ func NewDataFileRepositoryPostgres(db *sql.DB) *DataFileRepositoryPostgres {
 // GetByID получает файл данных по ID
 func (r *DataFileRepositoryPostgres) GetByID(ctx context.Context, id string) (*core_entity.DataFile, error) {
 	query := `
-		SELECT id, source_id, path, size, hash, data, created, updated
+		SELECT id, source_id, path, file_type, size, hash, data, created, updated
 		FROM core_data_files
 		WHERE id = $1 AND deleted_at IS NULL
 	`
@@ -36,7 +36,7 @@ func (r *DataFileRepositoryPostgres) GetByID(ctx context.Context, id string) (*c
 	var dataJSON []byte
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&df.ID, &df.SourceID, &df.Path, &df.Size, &df.Hash,
+		&df.ID, &df.SourceID, &df.Path, &df.FileType, &df.Size, &df.Hash,
 		&dataJSON, &df.Created, &df.Updated,
 	)
 
@@ -57,7 +57,7 @@ func (r *DataFileRepositoryPostgres) GetByID(ctx context.Context, id string) (*c
 // List получает список файлов данных с фильтрацией
 func (r *DataFileRepositoryPostgres) List(ctx context.Context, filter repository.DataFileFilter) ([]*core_entity.DataFile, int64, error) {
 	query := `
-		SELECT id, source_id, path, size, hash, data, created, updated
+		SELECT id, source_id, path, file_type, size, hash, data, created, updated
 		FROM core_data_files
 		WHERE deleted_at IS NULL
 	`
@@ -103,7 +103,7 @@ func (r *DataFileRepositoryPostgres) List(ctx context.Context, filter repository
 		var dataJSON []byte
 
 		err := rows.Scan(
-			&df.ID, &df.SourceID, &df.Path, &df.Size, &df.Hash,
+			&df.ID, &df.SourceID, &df.Path, &df.FileType, &df.Size, &df.Hash,
 			&dataJSON, &df.Created, &df.Updated,
 		)
 		if err != nil {
@@ -123,8 +123,8 @@ func (r *DataFileRepositoryPostgres) List(ctx context.Context, filter repository
 // Create создает новый файл данных
 func (r *DataFileRepositoryPostgres) Create(ctx context.Context, df *core_entity.DataFile) error {
 	query := `
-		INSERT INTO core_data_files (id, source_id, path, size, hash, data, created, updated)
-		VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+		INSERT INTO core_data_files (id, source_id, path, file_type, size, hash, data, created, updated)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
 	`
 
 	var dataJSON []byte
@@ -133,7 +133,7 @@ func (r *DataFileRepositoryPostgres) Create(ctx context.Context, df *core_entity
 	}
 
 	_, err := r.db.ExecContext(ctx, query,
-		df.ID.String(), df.SourceID.String(), df.Path, df.Size, df.Hash, dataJSON,
+		df.ID.String(), df.SourceID.String(), df.Path, df.FileType, df.Size, df.Hash, dataJSON,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create data file: %w", err)
@@ -146,8 +146,8 @@ func (r *DataFileRepositoryPostgres) Create(ctx context.Context, df *core_entity
 func (r *DataFileRepositoryPostgres) Update(ctx context.Context, df *core_entity.DataFile) error {
 	query := `
 		UPDATE core_data_files
-		SET source_id = $1, path = $2, size = $3, hash = $4, data = $5, updated = NOW()
-		WHERE id = $6
+		SET source_id = $1, path = $2, file_type = $3, size = $4, hash = $5, data = $6, updated = NOW()
+		WHERE id = $7
 	`
 
 	var dataJSON []byte
@@ -156,7 +156,7 @@ func (r *DataFileRepositoryPostgres) Update(ctx context.Context, df *core_entity
 	}
 
 	result, err := r.db.ExecContext(ctx, query,
-		df.SourceID.String(), df.Path, df.Size, df.Hash, dataJSON, df.ID.String(),
+		df.SourceID.String(), df.Path, df.FileType, df.Size, df.Hash, dataJSON, df.ID.String(),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update data file: %w", err)
@@ -196,7 +196,7 @@ func (r *DataFileRepositoryPostgres) Delete(ctx context.Context, id string) erro
 // GetBySourceAndPath получает файл данных по ID источника и пути
 func (r *DataFileRepositoryPostgres) GetBySourceAndPath(ctx context.Context, sourceID string, path string) (*core_entity.DataFile, error) {
 	query := `
-		SELECT id, source_id, path, size, hash, data, created, updated
+		SELECT id, source_id, path, file_type, size, hash, data, created, updated
 		FROM core_data_files
 		WHERE source_id = $1 AND path = $2 AND deleted_at IS NULL
 	`
@@ -205,7 +205,7 @@ func (r *DataFileRepositoryPostgres) GetBySourceAndPath(ctx context.Context, sou
 	var dataJSON []byte
 
 	err := r.db.QueryRowContext(ctx, query, sourceID, path).Scan(
-		&df.ID, &df.SourceID, &df.Path, &df.Size, &df.Hash,
+		&df.ID, &df.SourceID, &df.Path, &df.FileType, &df.Size, &df.Hash,
 		&dataJSON, &df.Created, &df.Updated,
 	)
 
@@ -244,8 +244,8 @@ func (r *DataFileRepositoryPostgres) BulkCreate(ctx context.Context, files []*co
 	defer tx.Rollback()
 
 	query := `
-		INSERT INTO core_data_files (id, source_id, path, size, hash, data, created, updated)
-		VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+		INSERT INTO core_data_files (id, source_id, path, file_type, size, hash, data, created, updated)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
 	`
 
 	for _, df := range files {
@@ -255,7 +255,7 @@ func (r *DataFileRepositoryPostgres) BulkCreate(ctx context.Context, files []*co
 		}
 
 		_, err := tx.ExecContext(ctx, query,
-			df.ID.String(), df.SourceID.String(), df.Path, df.Size, df.Hash, dataJSON,
+			df.ID.String(), df.SourceID.String(), df.Path, df.FileType, df.Size, df.Hash, dataJSON,
 		)
 		if err != nil {
 			return fmt.Errorf("failed to create data file: %w", err)
@@ -275,8 +275,8 @@ func (r *DataFileRepositoryPostgres) BulkUpdate(ctx context.Context, files []*co
 
 	query := `
 		UPDATE core_data_files
-		SET source_id = $1, path = $2, size = $3, hash = $4, data = $5, updated = NOW()
-		WHERE id = $6
+		SET source_id = $1, path = $2, file_type = $3, size = $4, hash = $5, data = $6, updated = NOW()
+		WHERE id = $7
 	`
 
 	for _, df := range files {
@@ -286,7 +286,7 @@ func (r *DataFileRepositoryPostgres) BulkUpdate(ctx context.Context, files []*co
 		}
 
 		result, err := tx.ExecContext(ctx, query,
-			df.SourceID.String(), df.Path, df.Size, df.Hash, dataJSON, df.ID.String(),
+			df.SourceID.String(), df.Path, df.FileType, df.Size, df.Hash, dataJSON, df.ID.String(),
 		)
 		if err != nil {
 			return fmt.Errorf("failed to update data file: %w", err)

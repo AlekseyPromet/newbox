@@ -147,3 +147,78 @@ type TimeZone string
 
 // Facility представляет идентификатор или описание объекта
 type Facility string
+
+// StringArray представляет массив строк для работы с PostgreSQL array
+type StringArray struct {
+	Elements []string
+}
+
+// Scan реализует sql.Scanner для StringArray
+func (a *StringArray) Scan(value interface{}) error {
+	if value == nil {
+		a.Elements = nil
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("failed to scan StringArray")
+	}
+	str := string(bytes)
+	// Простая реализация парсинга PostgreSQL array формата {elem1,elem2}
+	if str == "{}" {
+		a.Elements = []string{}
+		return nil
+	}
+	if len(str) < 2 || str[0] != '{' || str[len(str)-1] != '}' {
+		return errors.New("invalid array format")
+	}
+	content := str[1 : len(str)-1]
+	if content == "" {
+		a.Elements = []string{}
+		return nil
+	}
+	a.Elements = splitArray(content)
+	return nil
+}
+
+// Value реализует driver.Valuer для StringArray
+func (a StringArray) Value() ([]byte, error) {
+	if a.Elements == nil {
+		return nil, nil
+	}
+	if len(a.Elements) == 0 {
+		return []byte("{}"), nil
+	}
+	result := "{"
+	for i, elem := range a.Elements {
+		if i > 0 {
+			result += ","
+		}
+		result += elem
+	}
+	result += "}"
+	return []byte(result), nil
+}
+
+func splitArray(s string) []string {
+	var result []string
+	current := ""
+	inQuotes := false
+	for _, c := range s {
+		switch c {
+		case '"':
+			inQuotes = !inQuotes
+		case ',':
+			if inQuotes {
+				current += string(c)
+			} else {
+				result = append(result, current)
+				current = ""
+			}
+		default:
+			current += string(c)
+		}
+	}
+	result = append(result, current)
+	return result
+}

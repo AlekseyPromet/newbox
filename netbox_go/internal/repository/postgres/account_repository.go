@@ -11,7 +11,6 @@ import (
 	account_entity "github.com/AlekseyPromet/netbox_go/internal/domain/account/entity"
 	"github.com/AlekseyPromet/netbox_go/internal/repository"
 	"github.com/AlekseyPromet/netbox_go/pkg/types"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // AccountRepositoryPostgres реализует UserTokenRepository, BookmarkRepository,
@@ -49,7 +48,7 @@ func (r *AccountRepositoryPostgres) ListByUser(ctx context.Context, userID types
 		var expires, lastUsed sql.NullTime
 		var plaintext, key, hmac sql.NullString
 		var pepperID sql.NullInt16
-		var ips pgtype.StringArray
+		var ips types.StringArray
 
 		if err := rows.Scan(
 			&t.ID, &versionStr, &t.UserID, &t.Description, &t.Created,
@@ -82,7 +81,7 @@ func (r *AccountRepositoryPostgres) ListByUser(ctx context.Context, userID types
 			val := hmac.String
 			t.HMACDigest = &val
 		}
-		t.AllowedIPs = parseIPNets(ips)
+		t.AllowedIPs = parseIPNets(ips.Elements)
 
 		result = append(result, &t)
 	}
@@ -102,7 +101,7 @@ func (r *AccountRepositoryPostgres) Get(ctx context.Context, id types.ID, userID
 	var expires, lastUsed sql.NullTime
 	var plaintext, key, hmac sql.NullString
 	var pepperID sql.NullInt16
-	var ips pgtype.StringArray
+	var ips types.StringArray
 
 	err := r.db.QueryRowContext(ctx, query, id.String(), userID.String()).Scan(
 		&t.ID, &versionStr, &t.UserID, &t.Description, &t.Created,
@@ -139,7 +138,7 @@ func (r *AccountRepositoryPostgres) Get(ctx context.Context, id types.ID, userID
 		val := hmac.String
 		t.HMACDigest = &val
 	}
-	t.AllowedIPs = parseIPNets(ips)
+	t.AllowedIPs = parseIPNets(ips.Elements)
 
 	return &t, nil
 }
@@ -199,7 +198,7 @@ func (r *AccountRepositoryPostgres) Create(ctx context.Context, token *account_e
 		key,
 		pepper,
 		hmac,
-		pgtype.StringArray{Elements: ips},
+		types.StringArray{Elements: ips},
 	).Scan(&token.ID)
 	if err != nil {
 		return fmt.Errorf("create token: %w", err)
@@ -243,7 +242,7 @@ func (r *AccountRepositoryPostgres) Update(ctx context.Context, token *account_e
 
 	res, err := r.db.ExecContext(ctx, query,
 		formatTokenVersion(token.Version), token.Description, expires, lastUsed,
-		token.Enabled, token.WriteEnabled, plaintext, key, pepper, hmac, pgtype.StringArray{Elements: ips},
+		token.Enabled, token.WriteEnabled, plaintext, key, pepper, hmac, types.StringArray{Elements: ips},
 		token.ID, token.UserID,
 	)
 	if err != nil {

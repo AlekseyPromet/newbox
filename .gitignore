@@ -1,19 +1,12 @@
 ```
-# Go build artifacts
+# Compiled and build artifacts
 *.o
+*.obj
+*.exe
+*.dll
+*.so
 *.a
 *.out
-*.test
-*.prof
-*.so
-*.dylib
-*.dll
-
-# Go cache and build directories
-go.sum.bk
-coverage.out
-cover.out
-*.coverprofile
 
 # Dependencies
 vendor/
@@ -21,6 +14,7 @@ vendor/
 # Logs and temp files
 *.log
 *.tmp
+*.swp
 
 # Environment
 .env
@@ -30,10 +24,13 @@ vendor/
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Go-specific
+*.test
+*.prof
 ```
