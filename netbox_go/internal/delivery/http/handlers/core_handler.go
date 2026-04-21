@@ -2,6 +2,9 @@
 package handlers
 
 import (
+    "crypto/sha256"
+    "encoding/json"
+    "fmt"
     "net/http"
     "strconv"
     "time"
@@ -172,6 +175,19 @@ func (h *CoreHandlers) DeleteDataSource(c echo.Context) error {
     return c.NoContent(http.StatusNoContent)
 }
 
+// SyncDataSource обрабатывает POST /api/core/data-sources/:id/sync
+func (h *CoreHandlers) SyncDataSource(c echo.Context) error {
+    if h.dataSources == nil {
+        return notImplemented(c, "DataSourceRepository")
+    }
+
+    id := c.Param("id")
+    if err := h.dataSources.Sync(c.Request().Context(), id); err != nil {
+        return handleError(err)
+    }
+    return c.JSON(http.StatusOK, map[string]string{"status": "syncing"})
+}
+
 // -------- Data Files --------
 
 // ListDataFiles обрабатывает GET /api/core/data-files
@@ -223,16 +239,48 @@ func (h *CoreHandlers) CreateDataFile(c echo.Context) error {
         return notImplemented(c, "DataFileRepository")
     }
 
-    var df entity.DataFile
-    if err := c.Bind(&df); err != nil {
+    var req struct {
+        SourceID string          `json:"source_id"`
+        Path     string          `json:"path"`
+        FileType string          `json:"file_type"` // csv, yaml, json
+        Data     json.RawMessage `json:"data,omitempty"`
+    }
+
+    if err := c.Bind(&req); err != nil {
         return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+    }
+
+    if req.SourceID == "" || req.Path == "" || req.FileType == "" {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "source_id, path and file_type are required"})
+    }
+
+    if req.FileType != "csv" && req.FileType != "yaml" && req.FileType != "json" {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "file_type must be csv, yaml or json"})
+    }
+
+    sourceID, err := types.ParseID(req.SourceID)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid source_id format"})
+    }
+
+    // Генерируем хеш данных
+    hash := fmt.Sprintf("%x", sha256.Sum256(req.Data))
+
+    df := &entity.DataFile{
+        ID:       types.NewID(),
+        SourceID: sourceID,
+        Path:     req.Path,
+        FileType: req.FileType,
+        Size:     int64(len(req.Data)),
+        Hash:     hash,
+        Data:     req.Data,
     }
 
     if err := df.Validate(); err != nil {
         return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
     }
 
-    if err := h.dataFiles.Create(c.Request().Context(), &df); err != nil {
+    if err := h.dataFiles.Create(c.Request().Context(), df); err != nil {
         return handleError(err)
     }
 
@@ -251,12 +299,35 @@ func (h *CoreHandlers) UpdateDataFile(c echo.Context) error {
         return handleError(err)
     }
 
-    var input entity.DataFile
-    if err := c.Bind(&input); err != nil {
+    var req struct {
+        Path     *string         `json:"path,omitempty"`
+        FileType *string         `json:"file_type,omitempty"`
+        Data     json.RawMessage `json:"data,omitempty"`
+    }
+
+    if err := c.Bind(&req); err != nil {
         return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
     }
 
-    input.ID = existing.ID
+    // Копируем существующие значения
+    input := *existing
+
+    // Обновляем поля если они предоставлены
+    if req.Path != nil {
+        input.Path = *req.Path
+    }
+    if req.FileType != nil {
+        if *req.FileType != "csv" && *req.FileType != "yaml" && *req.FileType != "json" {
+            return c.JSON(http.StatusBadRequest, map[string]string{"error": "file_type must be csv, yaml or json"})
+        }
+        input.FileType = *req.FileType
+    }
+    if req.Data != nil {
+        input.Data = req.Data
+        input.Size = int64(len(req.Data))
+        input.Hash = fmt.Sprintf("%x", sha256.Sum256(req.Data))
+    }
+
     if err := input.Validate(); err != nil {
         return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
     }
@@ -454,7 +525,10 @@ func (h *CoreHandlers) LogObjectChange(c echo.Context) error {
 
     var userID *types.ID
     if req.UserID != nil {
-        uid := types.ID(*req.UserID)
+        uid, err := types.ParseID(*req.UserID)
+        if err != nil {
+            return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user_id format"})
+        }
         userID = &uid
     }
 

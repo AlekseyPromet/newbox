@@ -111,6 +111,7 @@ type DataFile struct {
     ID        types.ID        `json:"id"`
     SourceID  types.ID        `json:"source_id"`
     Path      string          `json:"path"`
+    FileType  string          `json:"file_type"` // csv, yaml, json
     Size      int64           `json:"size"`
     Hash      string          `json:"hash"`
     Data      json.RawMessage `json:"data,omitempty"`
@@ -121,6 +122,12 @@ type DataFile struct {
 // Validate проверяет корректность DataFile.
 func (df *DataFile) Validate() error {
     if df.SourceID.String() == "" || df.Path == "" {
+        return types.ErrValidationFailed
+    }
+    if df.FileType == "" {
+        return types.ErrValidationFailed
+    }
+    if df.FileType != "csv" && df.FileType != "yaml" && df.FileType != "json" {
         return types.ErrValidationFailed
     }
     return nil
