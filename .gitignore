@@ -3,52 +3,38 @@
 *.o
 *.obj
 *.out
+dist/
+build/
+target/
 
 # Dependencies
 vendor/
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.egg-info/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
-
-# Editors
-.vscode/
-.idea/
+*.swo
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg-info/
-.eggs/
-
-# Build directories
-build/
-dist/
-*.egg
-
-# Go specific
-*.exe
-*.dll
+# Go-specific
+*.a
 *.so
 *.dylib
-*.test
-*.prof
 cover.out
-
-# Original rules preserved
 ```

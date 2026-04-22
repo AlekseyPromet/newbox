@@ -272,3 +272,37 @@ func (r *ConfigRevisionRepositoryPostgres) GetLatest(ctx context.Context) (*core
 
 	return &revision, nil
 }
+
+// Update обновляет существующую ревизию конфигурации
+func (r *ConfigRevisionRepositoryPostgres) Update(ctx context.Context, revision *core_entity.ConfigRevision) error {
+	query := `
+		UPDATE core_config_revisions
+		SET created = $2, active = $3, comment = $4, data = $5
+		WHERE id = $1 AND deleted_at IS NULL
+	`
+
+	var dataJSON []byte
+	if revision.Data != nil {
+		dataJSON = revision.Data
+	} else {
+		dataJSON = []byte("{}")
+	}
+
+	result, err := r.db.ExecContext(ctx, query,
+		revision.ID.String(), revision.Created, revision.Active,
+		revision.Comment, dataJSON,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update config revision: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return types.ErrNotFound
+	}
+
+	return nil
+}
