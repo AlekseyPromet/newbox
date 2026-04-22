@@ -15,8 +15,8 @@ type ConfigRevisionRepository interface {
 	GetByID(ctx context.Context, id types.ID) (*entity.ConfigRevision, error)
 	// GetActive возвращает активную ревизию
 	GetActive(ctx context.Context) (*entity.ConfigRevision, error)
-	// List возвращает список ревизий с пагинацией
-	List(ctx context.Context, limit, offset int) ([]*entity.ConfigRevision, int, error)
+	// List возвращает список ревизий с фильтрацией и пагинацией
+	List(ctx context.Context, filter ConfigRevisionFilter, limit, offset int) ([]*entity.ConfigRevision, int, error)
 	// Create создаёт новую ревизию
 	Create(ctx context.Context, revision *entity.ConfigRevision) error
 	// Update обновляет ревизию
@@ -33,8 +33,8 @@ type ObjectTypeRepository interface {
 	GetByID(ctx context.Context, id types.ID) (*entity.ObjectType, error)
 	// GetByAppAndModel возвращает тип объекта по app_label и model
 	GetByAppAndModel(ctx context.Context, appLabel, model string) (*entity.ObjectType, error)
-	// List возвращает список типов объектов с фильтрацией
-	List(ctx context.Context, appLabel, model string, public *bool, limit, offset int) ([]*entity.ObjectType, int, error)
+	// List возвращает список типов объектов с фильтрацией и пагинацией
+	List(ctx context.Context, filter ObjectTypeFilter, limit, offset int) ([]*entity.ObjectType, int, error)
 	// Create создаёт новый тип объекта
 	Create(ctx context.Context, ot *entity.ObjectType) error
 	// Update обновляет тип объекта
@@ -47,8 +47,8 @@ type ObjectTypeRepository interface {
 type ObjectChangeRepository interface {
 	// GetByID возвращает запись об изменении по ID
 	GetByID(ctx context.Context, id types.ID) (*entity.ObjectChange, error)
-	// List возвращает список изменений с фильтрацией
-	List(ctx context.Context, userID *types.ID, action types.Status, objectType, objectID string, timeFrom, timeTo time.Time, limit, offset int) ([]*entity.ObjectChange, int, error)
+	// List возвращает список изменений с фильтрацией и пагинацией
+	List(ctx context.Context, filter ObjectChangeFilter, limit, offset int) ([]*entity.ObjectChange, int, error)
 	// Create создаёт запись об изменении
 	Create(ctx context.Context, change *entity.ObjectChange) error
 	// BulkCreate создаёт несколько записей об изменениях
@@ -63,8 +63,8 @@ type DataSourceRepository interface {
 	GetByID(ctx context.Context, id types.ID) (*entity.DataSource, error)
 	// GetByName возвращает источник данных по имени
 	GetByName(ctx context.Context, name string) (*entity.DataSource, error)
-	// List возвращает список источников данных с фильтрацией
-	List(ctx context.Context, status types.Status, enabled *bool, typeFilter string, limit, offset int) ([]*entity.DataSource, int, error)
+	// List возвращает список источников данных с фильтрацией и пагинацией
+	List(ctx context.Context, filter DataSourceFilter, limit, offset int) ([]*entity.DataSource, int, error)
 	// Create создаёт новый источник данных
 	Create(ctx context.Context, ds *entity.DataSource) error
 	// Update обновляет источник данных
@@ -83,8 +83,8 @@ type DataFileRepository interface {
 	GetByID(ctx context.Context, id types.ID) (*entity.DataFile, error)
 	// GetBySourceAndPath возвращает файл по источнику и пути
 	GetBySourceAndPath(ctx context.Context, sourceID types.ID, path string) (*entity.DataFile, error)
-	// ListBySource возвращает список файлов источника
-	ListBySource(ctx context.Context, sourceID types.ID, limit, offset int) ([]*entity.DataFile, int, error)
+	// List возвращает список файлов данных с фильтрацией и пагинацией
+	List(ctx context.Context, filter DataFileFilter, limit, offset int) ([]*entity.DataFile, int, error)
 	// Create создаёт новый файл данных
 	Create(ctx context.Context, df *entity.DataFile) error
 	// Update обновляет файл данных
@@ -99,8 +99,8 @@ type DataFileRepository interface {
 type JobRepository interface {
 	// GetByID возвращает задачу по ID
 	GetByID(ctx context.Context, id types.ID) (*entity.Job, error)
-	// List возвращает список задач с фильтрацией
-	List(ctx context.Context, status types.Status, objectType string, objectID *types.ID, queueName string, limit, offset int) ([]*entity.Job, int, error)
+	// List возвращает список задач с фильтрацией и пагинацией
+	List(ctx context.Context, filter JobFilter, limit, offset int) ([]*entity.Job, int, error)
 	// Create создаёт новую задачу
 	Create(ctx context.Context, job *entity.Job) error
 	// Update обновляет задачу
