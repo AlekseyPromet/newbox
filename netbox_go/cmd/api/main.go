@@ -17,7 +17,6 @@ import (
 
 	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/handlers"
 	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/middleware"
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
 	"github.com/AlekseyPromet/netbox_go/internal/repository/postgres"
 )
 
@@ -33,15 +32,13 @@ func main() {
 	siteRepo := postgres.NewSiteRepositoryPostgres(db)
 	accountRepo := postgres.NewAccountRepositoryPostgres(db)
 
-	// Core репозитории пока не реализованы в postgres, поэтому передаем nil (вернет 501).
-	var (
-		dataSourceRepo   repository.DataSourceRepository
-		dataFileRepo     repository.DataFileRepository
-		jobRepo          repository.JobRepository
-		objectChangeRepo repository.ObjectChangeRepository
-		objectTypeRepo   repository.ObjectTypeRepository
-		configRevRepo    repository.ConfigRevisionRepository
-	)
+	// Core репозитории реализованы в postgres
+	dataSourceRepo := postgres.NewDataSourceRepositoryPostgres(db)
+	dataFileRepo := postgres.NewDataFileRepositoryPostgres(db)
+	jobRepo := postgres.NewJobRepositoryPostgres(db)
+	objectChangeRepo := postgres.NewObjectChangeRepositoryPostgres(db)
+	objectTypeRepo := postgres.NewObjectTypeRepositoryPostgres(db)
+	configRevRepo := postgres.NewConfigRevisionRepositoryPostgres(db)
 
 	// Создание обработчиков
 	siteHandler := handlers.NewSiteHandler(siteRepo)
