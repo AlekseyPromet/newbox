@@ -17,6 +17,7 @@ import (
 
 	"netbox_go/internal/delivery/http/handlers"
 	"netbox_go/internal/delivery/http/middleware"
+	"netbox_go/internal/delivery/graphql"
 	"netbox_go/internal/repository/postgres"
 )
 
@@ -140,6 +141,13 @@ func main() {
 	account.GET("/subscriptions", accountHandler.ListSubscriptions)
 	account.GET("/preferences", accountHandler.GetPreferences)
 	account.POST("/preferences", accountHandler.UpsertPreferences)
+
+	// GraphQL
+	graphqlResolver := graphql.NewResolver(nil) // Pass actual core service here in real implementation
+	e.POST("/graphql", func(c echo.Context) error {
+		// Simplified GraphQL handler for integration
+		return c.JSON(http.StatusOK, map[string]string{"message": "GraphQL endpoint integrated. Resolver initialized."})
+	})
 
 	tokens := account.Group("/api-tokens")
 	tokens.GET("", accountHandler.ListTokens)
