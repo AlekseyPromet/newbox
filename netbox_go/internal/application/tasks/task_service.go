@@ -503,7 +503,10 @@ func (s *TaskService) UpdateTask(ctx context.Context, id string, params CreateTa
 
 	task.Title = params.Title
 	task.Description = params.Description
-	task.WorkTypeID = types.ParseID(params.WorkTypeID)
+	task.WorkTypeID, err = types.ParseID(params.WorkTypeID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid work type id: %w", err)
+	}
 	task.Priority = params.Priority
 	task.DueDate = params.DueDate
 	task.UpdatedAt = time.Now()
