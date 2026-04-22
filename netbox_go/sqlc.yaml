@@ -17,7 +17,7 @@ sql:
         emit_empty_slices: true
         overrides:
           - db_type: "uuid"
-            go_type: "github.com/AlekseyPromet/netbox_go/pkg/types.ID"
+            go_type: "netbox_go/pkg/types.ID"
           - db_type: "timestamptz"
             go_type: "time.Time"
           - db_type: "jsonb"
@@ -29,7 +29,7 @@ sql:
     queries:
       - ./internal/infrastructure/storage/sqlc/extras/queries.sql
     schema:
-      - ./netbox_go/migrations/005_extras_schema.sql
+      - ./migrations/005_extras_schema.sql
     gen:
       go:
         package: "extrasdb"
@@ -42,7 +42,7 @@ sql:
         emit_empty_slices: true
         overrides:
           - db_type: "uuid"
-            go_type: "github.com/AlekseyPromet/netbox_go/pkg/types.ID"
+            go_type: "netbox_go/pkg/types.ID"
           - db_type: "timestamptz"
             go_type: "time.Time"
           - db_type: "jsonb"

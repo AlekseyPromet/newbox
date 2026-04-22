@@ -116,7 +116,7 @@ CREATE TABLE extras_savedfilter_object_types (
 CREATE TABLE extras_tableconfig (
     id UUID PRIMARY KEY,
     object_type VARCHAR(255) NOT NULL,
-    table VARCHAR(100) NOT NULL,
+    "table" VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     description VARCHAR(200),
     user_id UUID REFERENCES core_user(id) ON DELETE SET NULL,

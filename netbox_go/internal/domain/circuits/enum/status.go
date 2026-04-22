@@ -1,7 +1,7 @@
 // Package enum содержит перечисления для домена Circuits
 package enum
 
-import "github.com/AlekseyPromet/netbox_go/pkg/types"
+import "netbox_go/pkg/types"
 
 // CircuitStatus представляет статусы цепи
 type CircuitStatus string

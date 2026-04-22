@@ -1,7 +1,7 @@
 // Package enum содержит перечисления (enums) для компонентов DCIM
 package enum
 
-import "github.com/AlekseyPromet/netbox_go/pkg/types"
+import "netbox_go/pkg/types"
 
 // CableType представляет типы кабелей
 type CableType string

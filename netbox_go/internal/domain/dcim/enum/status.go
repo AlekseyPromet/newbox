@@ -1,7 +1,7 @@
 // Package enum содержит перечисления для домена DCIM
 package enum
 
-import "github.com/AlekseyPromet/netbox_go/pkg/types"
+import "netbox_go/pkg/types"
 
 // ClusterStatus представляет статусы кластера
 type ClusterStatus string

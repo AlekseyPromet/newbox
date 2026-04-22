@@ -1,7 +1,7 @@
 // Package enum содержит перечисления для домена Core
 package enum
 
-import "github.com/AlekseyPromet/netbox_go/pkg/types"
+import "netbox_go/pkg/types"
 
 // DataSourceStatus определяет статусы источника данных
 // См. netbox/core/choices.py DataSourceStatusChoices

@@ -6,130 +6,141 @@ import (
 	"github.com/google/uuid"
 )
 
-// GenericForeignKey represents a reference to any object in the system.
-type GenericForeignKey struct {
-	ContentType string `json:"content_type"`
-	ObjectID    int64  `json:"object_id"`
-}
-
+// EventRule defines an action to be taken automatically in response to a specific set of events.
 type EventRule struct {
-	ID                uuid.UUID         `json:"id"`
-	Name              string            `json:"name"`
-	Description       string            `json:"description,omitempty"`
-	EventTypes        []string          `json:"event_types"`
-	Enabled           bool              `json:"enabled"`
-	Conditions        map[string]any    `json:"conditions,omitempty"`
-	ActionType        string            `json:"action_type"`
-	ActionObject      GenericForeignKey `json:"action_object"`
-	ActionData        map[string]any    `json:"action_data,omitempty"`
-	Comments          string            `json:"comments,omitempty"`
-	OwnerID           *uuid.UUID        `json:"owner_id,omitempty"`
-	CreatedAt         time.Time         `json:"created_at"`
-	UpdatedAt         time.Time         `json:"updated_at"`
+	ID                uuid.UUID
+	Name              string
+	Description       string
+	EventTypes        []string
+	Enabled           bool
+	Conditions        map[string]interface{}
+	ActionType        string
+	ActionObjectType  string
+	ActionObjectID    *int64
+	ActionData        map[string]interface{}
+	Comments          string
+	OwnerID           uuid.UUID
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	ObjectTypes       []string // Many-to-Many relationship
 }
 
+// Webhook defines a request that will be sent to a remote application.
 type Webhook struct {
-	ID                uuid.UUID `json:"id"`
-	Name              string    `json:"name"`
-	Description       string    `json:"description,omitempty"`
-	PayloadURL        string    `json:"payload_url"`
-	HTTPMethod        string    `json:"http_method"`
-	HTTPContentType   string    `json:"http_content_type"`
-	AdditionalHeaders string    `json:"additional_headers,omitempty"`
-	BodyTemplate      string    `json:"body_template,omitempty"`
-	Secret            string    `json:"secret,omitempty"`
-	SSLVerification   bool      `json:"ssl_verification"`
-	CAFilePath        string    `json:"ca_file_path,omitempty"`
-	OwnerID           *uuid.UUID `json:"owner_id,omitempty"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID               uuid.UUID
+	Name             string
+	Description      string
+	PayloadURL       string
+	HTTPMethod       string
+	HTTPContentType  string
+	AdditionalHeaders string
+	BodyTemplate     string
+	Secret           string
+	SSLVerification  bool
+	CAFilePath       string
+	OwnerID          uuid.UUID
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
+// CustomLink is a custom link to an external representation of a NetBox object.
 type CustomLink struct {
-	ID           uuid.UUID `json:"id"`
-	Name         string    `json:"name"`
-	Enabled      bool      `json:"enabled"`
-	LinkText     string    `json:"link_text"`
-	LinkURL      string    `json:"link_url"`
-	Weight       int       `json:"weight"`
-	GroupName    string    `json:"group_name,omitempty"`
-	ButtonClass  string    `json:"button_class"`
-	NewWindow    bool      `json:"new_window"`
-	OwnerID      *uuid.UUID `json:"owner_id,omitempty"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID           uuid.UUID
+	Name         string
+	Enabled      bool
+	LinkText     string
+	LinkURL      string
+	Weight       int16
+	GroupName    string
+	ButtonClass  string
+	NewWindow    bool
+	OwnerID      uuid.UUID
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	ObjectTypes  []string // Many-to-Many relationship
 }
 
+// ExportTemplate is a template for exporting object data.
 type ExportTemplate struct {
-	ID             uuid.UUID `json:"id"`
-	Name           string    `json:"name"`
-	Description    string    `json:"description,omitempty"`
-	TemplateCode   string    `json:"template_code"`
-	MimeType       string    `json:"mime_type"`
-	FileName       string    `json:"file_name"`
-	FileExtension  string    `json:"file_extension"`
-	AsAttachment   bool      `json:"as_attachment"`
-	OwnerID        *uuid.UUID `json:"owner_id,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID            uuid.UUID
+	Name          string
+	Description   string
+	TemplateCode  string
+	MimeType      string
+	FileName      string
+	FileExtension string
+	AsAttachment  bool
+	OwnerID       uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	ObjectTypes   []string // Many-to-Many relationship
 }
 
+// SavedFilter is a set of predefined keyword parameters for filtering.
 type SavedFilter struct {
-	ID          uuid.UUID     `json:"id"`
-	Name        string        `json:"name"`
-	Slug        string        `json:"slug"`
-	Description string        `json:"description,omitempty"`
-	UserID      *uuid.UUID    `json:"user_id,omitempty"`
-	Weight      int           `json:"weight"`
-	Enabled     bool          `json:"enabled"`
-	Shared      bool          `json:"shared"`
-	Parameters  map[string]any `json:"parameters"`
-	OwnerID     *uuid.UUID    `json:"owner_id,omitempty"`
-	CreatedAt   time.Time     `json:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at"`
+	ID          uuid.UUID
+	Name        string
+	Slug        string
+	Description string
+	UserID      uuid.UUID
+	Weight      int16
+	Enabled     bool
+	Shared      bool
+	Parameters  map[string]interface{}
+	OwnerID     uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	ObjectTypes []string // Many-to-Many relationship
 }
 
+// TableConfig is a saved configuration of columns and ordering for a table.
 type TableConfig struct {
-	ID          uuid.UUID `json:"id"`
-	ObjectType  string    `json:"object_type"`
-	Table       string    `json:"table"`
-	Name        string    `json:"name"`
-	Description string    `json:"description,omitempty"`
-	UserID      *uuid.UUID `json:"user_id,omitempty"`
-	Weight      int       `json:"weight"`
-	Enabled     bool      `json:"enabled"`
-	Shared      bool      `json:"shared"`
-	Columns     []string  `json:"columns"`
-	Ordering    []string  `json:"ordering,omitempty"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          uuid.UUID
+	ObjectType  string
+	Table       string
+	Name        string
+	Description string
+	UserID      uuid.UUID
+	Weight      int16
+	Enabled     bool
+	Shared      bool
+	Columns     []string
+	Ordering    []string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
+// ImageAttachment is an uploaded image associated with an object.
 type ImageAttachment struct {
-	ID          uuid.UUID         `json:"id"`
-	Object       GenericForeignKey `json:"object"`
-	Image       string            `json:"image"`
-	ImageHeight  int               `json:"image_height"`
-	ImageWidth   int               `json:"image_width"`
-	Name        string            `json:"name,omitempty"`
-	Description string            `json:"description,omitempty"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
+	ID          uuid.UUID
+	ObjectType  string
+	ObjectID    int64
+	Image       string
+	ImageHeight int16
+	ImageWidth  int16
+	Name        string
+	Description string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
+// JournalEntry is a historical remark concerning an object.
 type JournalEntry struct {
-	ID                uuid.UUID         `json:"id"`
-	AssignedObject    GenericForeignKey `json:"assigned_object"`
-	CreatedBy         *uuid.UUID        `json:"created_by,omitempty"`
-	Kind              string            `json:"kind"`
-	Comments          string            `json:"comments"`
-	CreatedAt         time.Time         `json:"created_at"`
-	UpdatedAt         time.Time         `json:"updated_at"`
+	ID                uuid.UUID
+	AssignedObjectType string
+	AssignedObjectID   int64
+	CreatedBy         uuid.UUID
+	Kind              string
+	Comments          string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
+// Bookmark is an object bookmarked by a user.
 type Bookmark struct {
-	ID        uuid.UUID         `json:"id"`
-	Object    GenericForeignKey `json:"object"`
-	UserID    uuid.UUID         `json:"user_id"`
-	CreatedAt time.Time         `json:"created_at"`
+	ID         uuid.UUID
+	ObjectType string
+	ObjectID   int64
+	UserID     uuid.UUID
+	CreatedAt  time.Time
 }

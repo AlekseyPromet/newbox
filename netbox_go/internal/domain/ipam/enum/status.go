@@ -1,7 +1,7 @@
 // Package enum содержит перечисления для домена IPAM
 package enum
 
-import "github.com/AlekseyPromet/netbox_go/pkg/types"
+import "netbox_go/pkg/types"
 
 // PrefixStatus представляет статусы префикса
 type PrefixStatus string
