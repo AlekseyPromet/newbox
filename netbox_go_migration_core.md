@@ -40,17 +40,17 @@ The migration will follow the existing project structure:
 - [ ] Port Filters and Mixins from `graphql/filters.py` and `graphql/filter_mixins.py`
 
 ### 5. Management Commands (`netbox/core/management` - `netbox_go/cmd/...`)
-- [ ] Port `syncdatasource.py` to a Go CLI command or background worker
-- [ ] Port `rqworker.py` logic to Go worker implementation
-- [ ] Implement `nbshell` equivalent if needed for debugging
+- [x] Port `syncdatasource.py` to a Go CLI command or background worker
+- [x] Port `rqworker.py` logic to Go worker implementation
+- [x] Implement `nbshell` equivalent if needed for debugging
 
 ### 6. Tables & Presentation (`netbox/core/tables` - API Responses)
 - [ ] Map `tables/` column definitions to API response fields to ensure compatibility with the UI
 
 ### 7. Core Logic & Utils (`netbox/core/` root)
-- [ ] Port `search.py` logic to Postgres full-text search or specialized repository methods
-- [ ] Port `filtersets.py` to Go-based query builders
-- [ ] Port `jobs.py` and `events.py` to Go background task system
+- [ ] Port `search.py` logic to Postgres FTS (tsvector/tsquery) in Repositories
+- [ ] Port `filtersets.py` to type-safe Specification/Query Builder pattern
+- [ ] Port `jobs.py` and `events.py` to native Go worker pool with DB-backed queue
 
 ---
 
