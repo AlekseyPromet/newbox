@@ -62,31 +62,76 @@ func (r *ConfigRevisionPostgresRepository) GetActive(ctx context.Context) (*enti
 	}, nil
 }
 
-// List возвращает список ревизий с пагинацией
-func (r *ConfigRevisionPostgresRepository) List(ctx context.Context, limit, offset int) ([]*entity.ConfigRevision, int, error) {
-	q := coredb.New(r.db)
-	rows, err := q.ListConfigRevisions(ctx, int32(limit), int32(offset))
+// List возвращает список ревизий с фильтрацией и пагинацией
+func (r *ConfigRevisionPostgresRepository) List(ctx context.Context, filter repository.ConfigRevisionFilter, limit, offset int) ([]*entity.ConfigRevision, int, error) {
+	var query string
+	var args []interface{}
+
+	query = `SELECT id, created, active, comment, data FROM core_configrevision WHERE 1=1`
+	countQuery := `SELECT COUNT(*)::int FROM core_configrevision WHERE 1=1`
+
+	if filter.Comment != nil && *filter.Comment != "" {
+		val := "%" + *filter.Comment + "%"
+		query += ` AND comment ILIKE $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, val)
+		countQuery += ` AND comment ILIKE $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.CreatedAfter != nil {
+		query += ` AND created >= $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.CreatedAfter)
+		countQuery += ` AND created >= $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.CreatedBefore != nil {
+		query += ` AND created <= $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.CreatedBefore)
+		countQuery += ` AND created <= $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.SearchQuery != nil && *filter.SearchQuery != "" {
+		searchVal := "%" + *filter.SearchQuery + "%"
+		query += ` AND comment ILIKE $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, searchVal)
+		countQuery += ` AND comment ILIKE $` + fmt.Sprintf("%d", len(args))
+	}
+
+	query += ` ORDER BY created DESC LIMIT $` + fmt.Sprintf("%d", len(args)+1) + ` OFFSET $` + fmt.Sprintf("%d", len(args)+2)
+	
+	rows, err := r.db.QueryContext(ctx, query, append(args, limit, offset)...)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer rows.Close()
 
-	countRow, err := q.CountConfigRevisions(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	result := make([]*entity.ConfigRevision, len(rows))
-	for i, row := range rows {
-		result[i] = &entity.ConfigRevision{
+	var result []*entity.ConfigRevision
+	for rows.Next() {
+		var row struct {
+			ID      types.ID
+			Created time.Time
+			Active  bool
+			Comment sql.NullString
+			Data    []byte
+		}
+		if err := rows.Scan(&row.ID, &row.Created, &row.Active, &row.Comment, &row.Data); err != nil {
+			return nil, 0, err
+		}
+		result = append(result, &entity.ConfigRevision{
 			ID:      row.ID,
 			Created: row.Created,
 			Active:  row.Active,
 			Comment: row.Comment.String,
 			Data:    row.Data,
-		}
+		})
 	}
 
-	return result, int(countRow.Count), nil
+	var count int
+	err = r.db.QueryRowContext(ctx, countQuery, args...).Scan(&count)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, count, nil
 }
 
 // Create создаёт новую ревизию

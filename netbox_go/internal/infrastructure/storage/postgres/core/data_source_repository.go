@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"netbox_go/internal/domain/core/entity"
@@ -104,38 +105,73 @@ func (r *DataSourcePostgresRepository) GetByName(ctx context.Context, name strin
 }
 
 // List возвращает список источников данных с фильтрацией
-func (r *DataSourcePostgresRepository) List(ctx context.Context, status types.Status, enabled *bool, typeFilter string, limit, offset int) ([]*entity.DataSource, int, error) {
-	q := coredb.New(r.db)
+func (r *DataSourcePostgresRepository) List(ctx context.Context, filter repository.DataSourceFilter, limit, offset int) ([]*entity.DataSource, int, error) {
+	var query string
+	var args []interface{}
 
-	rows, err := q.ListDataSources(ctx, coredb.ListDataSourcesParams{
-		Status:   string(status),
-		Enabled:  enabled,
-		Type_:    typeFilter,
-		Limit:    int32(limit),
-		Offset:   int32(offset),
-	})
+	// Базовый запрос
+	query = `SELECT id, name, type, source_url, status, enabled, sync_interval, ignore_rules, parameters, last_synced, created, updated FROM core_datasource WHERE 1=1`
+	countQuery := `SELECT COUNT(*)::int FROM core_datasource WHERE 1=1`
+
+	// Фильтрация по статусу (MultipleChoiceFilter)
+	if len(filter.Status) > 0 {
+		statusList := make([]string, len(filter.Status))
+		for i, s := range filter.Status {
+			statusList[i] = string(s)
+		}
+		query += ` AND status = ANY($` + appendArg(&args, statusList) + `)`
+		countQuery += ` AND status = ANY($` + appendArg(&args, statusList) + `)`
+	}
+
+	if filter.Enabled != nil {
+		query += ` AND enabled = $` + appendArg(&args, *filter.Enabled) + `)`
+		countQuery += ` AND enabled = $` + appendArg(&args, *filter.Enabled) + `)`
+	}
+
+	if filter.Type != nil && *filter.Type != "" {
+		query += ` AND type = $` + appendArg(&args, *filter.Type) + `)`
+		countQuery += ` AND type = $` + appendArg(&args, *filter.Type) + `)`
+	}
+
+	// Поиск (Search logic)
+	if filter.SearchQuery != nil && *filter.SearchQuery != "" {
+		searchVal := "%" + *filter.SearchQuery + "%"
+		query += ` AND (name ILIKE $` + appendArg(&args, searchVal) + ` OR description ILIKE $` + appendArg(&args, searchVal) + ` OR comments ILIKE $` + appendArg(&args, searchVal) + `)`
+		countQuery += ` AND (name ILIKE $` + appendArg(&args, searchVal) + ` OR description ILIKE $` + appendArg(&args, searchVal) + ` OR comments ILIKE $` + appendArg(&args, searchVal) + `)`
+	}
+
+	// Пагинация
+	query += ` ORDER BY name LIMIT $` + appendArg(&args, limit) + ` OFFSET $` + appendArg(&args, offset) + `)`
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer rows.Close()
 
-	countRow, err := q.CountDataSources(ctx, coredb.CountDataSourcesParams{
-		Status:  string(status),
-		Enabled: enabled,
-		Type_:   typeFilter,
-	})
-	if err != nil {
-		return nil, 0, err
-	}
+	var result []*entity.DataSource
+	for rows.Next() {
+		var row struct {
+			ID           types.ID
+			Name         string
+			Type         string
+			SourceURL    string
+			Status       string
+			Enabled      bool
+			SyncInterval int32
+			IgnoreRules  []byte
+			Parameters   []byte
+			LastSynced   sql.NullTime
+			Created      time.Time
+			Updated      time.Time
+		}
+		if err := rows.Scan(&row.ID, &row.Name, &row.Type, &row.SourceURL, &row.Status, &row.Enabled, &row.SyncInterval, &row.IgnoreRules, &row.Parameters, &row.LastSynced, &row.Created, &row.Updated); err != nil {
+			return nil, 0, err
+		}
 
-	result := make([]*entity.DataSource, len(rows))
-	for i, row := range rows {
 		var ignoreRules []string
-		if row.IgnoreRules != nil && len(row.IgnoreRules) > 0 {
-			if err := types.UnmarshalJSON(row.IgnoreRules, &ignoreRules); err != nil {
-				ignoreRules = []string{}
-			}
-		} else {
-			ignoreRules = []string{}
+		if row.IgnoreRules != nil {
+			types.UnmarshalJSON(row.IgnoreRules, &ignoreRules)
 		}
 
 		var lastSynced *time.Time
@@ -143,7 +179,7 @@ func (r *DataSourcePostgresRepository) List(ctx context.Context, status types.St
 			lastSynced = &row.LastSynced.Time
 		}
 
-		result[i] = &entity.DataSource{
+		result = append(result, &entity.DataSource{
 			ID:           row.ID,
 			Name:         row.Name,
 			Type:         row.Type,
@@ -156,10 +192,21 @@ func (r *DataSourcePostgresRepository) List(ctx context.Context, status types.St
 			LastSynced:   lastSynced,
 			Created:      row.Created,
 			Updated:      row.Updated,
-		}
+		})
 	}
 
-	return result, int(countRow.Count), nil
+	var count int
+	err = r.db.QueryRowContext(ctx, countQuery, args...).Scan(&count)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, count, nil
+}
+
+func appendArg(args *[]interface{}, val interface{}) string {
+	*args = append(*args, val)
+	return fmt.Sprintf("%d", len(*args))
 }
 
 // Create создаёт новый источник данных

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"netbox_go/internal/domain/core/entity"
@@ -49,46 +50,92 @@ func (r *ObjectChangePostgresRepository) GetByID(ctx context.Context, id types.I
 }
 
 // List возвращает список изменений с фильтрацией
-func (r *ObjectChangePostgresRepository) List(ctx context.Context, userID *types.ID, action types.Status, objectType, objectID string, timeFrom, timeTo time.Time, limit, offset int) ([]*entity.ObjectChange, int, error) {
-	q := coredb.New(r.db)
+func (r *ObjectChangePostgresRepository) List(ctx context.Context, filter repository.ObjectChangeFilter, limit, offset int) ([]*entity.ObjectChange, int, error) {
+	var query string
+	var args []interface{}
 
-	var timeFromPtr, timeToPtr sql.NullTime
-	if !timeFrom.IsZero() {
-		timeFromPtr = sql.NullTime{Time: timeFrom, Valid: true}
-	}
-	if !timeTo.IsZero() {
-		timeToPtr = sql.NullTime{Time: timeTo, Valid: true}
+	query = `SELECT id, time, user_id, request_id, action, changed_object_type, changed_object_id, object_repr, object_data, related_object_type, related_object_id, related_object_repr FROM core_objectchange WHERE 1=1`
+	countQuery := `SELECT COUNT(*)::int FROM core_objectchange WHERE 1=1`
+
+	if filter.UserID != nil {
+		query += ` AND user_id = $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.UserID)
+		countQuery += ` AND user_id = $` + fmt.Sprintf("%d", len(args))
 	}
 
-	rows, err := q.ListObjectChanges(ctx, coredb.ListObjectChangesParams{
-		UserID:              userID,
-		Action:              string(action),
-		ChangedObjectType:   objectType,
-		ChangedObjectID:     objectID,
-		TimeFrom:            timeFromPtr,
-		TimeTo:              timeToPtr,
-		Limit:               int32(limit),
-		Offset:              int32(offset),
-	})
+	if filter.User != nil && *filter.User != "" {
+		// This requires a join with users table or a subquery, but for simplicity we use the user_name if available in the table
+		// In the Python code, it filters by user__username.
+		query += ` AND user_id IN (SELECT id FROM users WHERE username ILIKE $` + fmt.Sprintf("%d", len(args)+1) + `)`
+		args = append(args, "%"+*filter.User+"%")
+		countQuery += ` AND user_id IN (SELECT id FROM users WHERE username ILIKE $` + fmt.Sprintf("%d", len(args)) + `)`
+	}
+
+	if filter.Action != nil && *filter.Action != "" {
+		query += ` AND action = $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.Action)
+		countQuery += ` AND action = $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.ChangedObjectType != nil && *filter.ChangedObjectType != "" {
+		query += ` AND changed_object_type = $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.ChangedObjectType)
+		countQuery += ` AND changed_object_type = $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.ChangedObjectID != nil && *filter.ChangedObjectID != "" {
+		query += ` AND changed_object_id = $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.ChangedObjectID)
+		countQuery += ` AND changed_object_id = $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.TimeAfter != nil {
+		query += ` AND time >= $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.TimeAfter)
+		countQuery += ` AND time >= $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.TimeBefore != nil {
+		query += ` AND time <= $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.TimeBefore)
+		countQuery += ` AND time <= $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.SearchQuery != nil && *filter.SearchQuery != "" {
+		searchVal := "%" + *filter.SearchQuery + "%"
+		query += ` AND (object_repr ILIKE $` + fmt.Sprintf("%d", len(args)+1) + ` OR object_data::text ILIKE $` + fmt.Sprintf("%d", len(args)+1) + `)`
+		args = append(args, searchVal)
+		countQuery += ` AND (object_repr ILIKE $` + fmt.Sprintf("%d", len(args)) + ` OR object_data::text ILIKE $` + fmt.Sprintf("%d", len(args)) + `)`
+	}
+
+	query += ` ORDER BY time DESC LIMIT $` + fmt.Sprintf("%d", len(args)+1) + ` OFFSET $` + fmt.Sprintf("%d", len(args)+2)
+
+	rows, err := r.db.QueryContext(ctx, query, append(args, limit, offset)...)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer rows.Close()
 
-	countRow, err := q.CountObjectChanges(ctx, coredb.CountObjectChangesParams{
-		UserID:            userID,
-		Action:            string(action),
-		ChangedObjectType: objectType,
-		ChangedObjectID:   objectID,
-		TimeFrom:          timeFromPtr,
-		TimeTo:            timeToPtr,
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-
-	result := make([]*entity.ObjectChange, len(rows))
-	for i, row := range rows {
-		result[i] = &entity.ObjectChange{
+	var result []*entity.ObjectChange
+	for rows.Next() {
+		var row struct {
+			ID                 types.ID
+			Time               time.Time
+			UserID             types.ID
+			RequestID          sql.NullString
+			Action             string
+			ChangedObjectType  string
+			ChangedObjectID    string
+			ObjectRepr         sql.NullString
+			ObjectData         []byte
+			RelatedObjectType  sql.NullString
+			RelatedObjectID    sql.NullString
+			RelatedObjectRepr  sql.NullString
+		}
+		if err := rows.Scan(&row.ID, &row.Time, &row.UserID, &row.RequestID, &row.Action, &row.ChangedObjectType, &row.ChangedObjectID, &row.ObjectRepr, &row.ObjectData, &row.RelatedObjectType, &row.RelatedObjectID, &row.RelatedObjectRepr); err != nil {
+			return nil, 0, err
+		}
+		result = append(result, &entity.ObjectChange{
 			ID:                 row.ID,
 			Time:               row.Time,
 			UserID:             row.UserID,
@@ -96,15 +143,21 @@ func (r *ObjectChangePostgresRepository) List(ctx context.Context, userID *types
 			Action:             types.Status(row.Action),
 			ChangedObjectType:  row.ChangedObjectType,
 			ChangedObjectID:    row.ChangedObjectID,
-			ObjectRepr:         row.ObjectRepr,
+			ObjectRepr:         row.ObjectRepr.String,
 			ObjectData:         row.ObjectData,
 			RelatedObjectType:  row.RelatedObjectType.String,
 			RelatedObjectID:    row.RelatedObjectID.String,
 			RelatedObjectRepr:  row.RelatedObjectRepr.String,
-		}
+		})
 	}
 
-	return result, int(countRow.Count), nil
+	var count int
+	err = r.db.QueryRowContext(ctx, countQuery, args...).Scan(&count)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, count, nil
 }
 
 // Create создаёт запись об изменении

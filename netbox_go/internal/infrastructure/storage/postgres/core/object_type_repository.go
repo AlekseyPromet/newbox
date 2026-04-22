@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"netbox_go/internal/domain/core/entity"
@@ -84,41 +85,74 @@ func (r *ObjectTypePostgresRepository) GetByAppAndModel(ctx context.Context, app
 }
 
 // List возвращает список типов объектов с фильтрацией
-func (r *ObjectTypePostgresRepository) List(ctx context.Context, appLabel, model string, public *bool, limit, offset int) ([]*entity.ObjectType, int, error) {
-	q := coredb.New(r.db)
+func (r *ObjectTypePostgresRepository) List(ctx context.Context, filter repository.ObjectTypeFilter, limit, offset int) ([]*entity.ObjectType, int, error) {
+	var query string
+	var args []interface{}
 
-	rows, err := q.ListObjectTypes(ctx, coredb.ListObjectTypesParams{
-		AppLabel: appLabel,
-		Model:    model,
-		Public:   public,
-		Limit:    int32(limit),
-		Offset:   int32(offset),
-	})
+	query = `SELECT id, app_label, model, public, features, created, updated FROM django_content_type WHERE 1=1`
+	countQuery := `SELECT COUNT(*)::int FROM django_content_type WHERE 1=1`
+
+	if filter.AppLabel != nil && *filter.AppLabel != "" {
+		query += ` AND app_label = $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.AppLabel)
+		countQuery += ` AND app_label = $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.Model != nil && *filter.Model != "" {
+		query += ` AND model = $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.Model)
+		countQuery += ` AND model = $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.Public != nil {
+		query += ` AND public = $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, *filter.Public)
+		countQuery += ` AND public = $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.Features != nil && *filter.Features != "" {
+		val := "%" + *filter.Features + "%"
+		query += ` AND features::text ILIKE $` + fmt.Sprintf("%d", len(args)+1)
+		args = append(args, val)
+		countQuery += ` AND features::text ILIKE $` + fmt.Sprintf("%d", len(args))
+	}
+
+	if filter.SearchQuery != nil && *filter.SearchQuery != "" {
+		searchVal := "%" + *filter.SearchQuery + "%"
+		query += ` AND (app_label ILIKE $` + fmt.Sprintf("%d", len(args)+1) + ` OR model ILIKE $` + fmt.Sprintf("%d", len(args)+1) + `)`
+		args = append(args, searchVal)
+		countQuery += ` AND (app_label ILIKE $` + fmt.Sprintf("%d", len(args)) + ` OR model ILIKE $` + fmt.Sprintf("%d", len(args)) + `)`
+	}
+
+	query += ` ORDER BY app_label, model LIMIT $` + fmt.Sprintf("%d", len(args)+1) + ` OFFSET $` + fmt.Sprintf("%d", len(args)+2)
+
+	rows, err := r.db.QueryContext(ctx, query, append(args, limit, offset)...)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer rows.Close()
 
-	countRow, err := q.CountObjectTypes(ctx, coredb.CountObjectTypesParams{
-		AppLabel: appLabel,
-		Model:    model,
-		Public:   public,
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-
-	result := make([]*entity.ObjectType, len(rows))
-	for i, row := range rows {
-		var features []string
-		if row.Features != nil && len(row.Features) > 0 {
-			if err := types.UnmarshalJSON(row.Features, &features); err != nil {
-				features = []string{}
-			}
-		} else {
-			features = []string{}
+	var result []*entity.ObjectType
+	for rows.Next() {
+		var row struct {
+			ID       types.ID
+			AppLabel string
+			Model    string
+			Public   bool
+			Features []byte
+			Created  time.Time
+			Updated  time.Time
+		}
+		if err := rows.Scan(&row.ID, &row.AppLabel, &row.Model, &row.Public, &row.Features, &row.Created, &row.Updated); err != nil {
+			return nil, 0, err
 		}
 
-		result[i] = &entity.ObjectType{
+		var features []string
+		if row.Features != nil {
+			types.UnmarshalJSON(row.Features, &features)
+		}
+
+		result = append(result, &entity.ObjectType{
 			ID:       row.ID,
 			AppLabel: row.AppLabel,
 			Model:    row.Model,
@@ -126,10 +160,16 @@ func (r *ObjectTypePostgresRepository) List(ctx context.Context, appLabel, model
 			Features: features,
 			Created:  row.Created,
 			Updated:  row.Updated,
-		}
+		})
 	}
 
-	return result, int(countRow.Count), nil
+	var count int
+	err = r.db.QueryRowContext(ctx, countQuery, args...).Scan(&count)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, count, nil
 }
 
 // Create создаёт новый тип объекта

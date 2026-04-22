@@ -24,7 +24,7 @@ type DataSourceType struct {
 	Status      string         `json:"status"`
 	Enabled     bool           `json:"enabled"`
 	IgnoreRules string         `json:"ignore_rules"`
-	Parameters  string         `json:"parameters"` // Simplified as string for now, should be JSON
+	Parameters  interface{}    `json:"parameters"`
 	LastSynced  string         `json:"last_synced"`
 	DataFiles   []*DataFileType `json:"datafiles"`
 }

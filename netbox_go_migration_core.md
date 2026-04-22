@@ -31,13 +31,13 @@ The migration will follow the existing project structure:
 - [ ] **Validation**: Port logic from `api/serializers/` to Go validation logic
 
 ### 3. Forms & UI Logic (`netbox/core/forms` & `netbox/core/ui`)
-- [ ] **Forms**: Convert `forms/` logic (bulk edit, import) into Service layer logic in Go
-- [ ] **UI Panels**: Analyze `ui/panels.py` to ensure API responses provide necessary data for frontend panels
+- [x] **Forms**: Convert `forms/` logic (bulk edit, import) into Service layer logic in Go
+- [x] **UI Panels**: Analyze `ui/panels.py` to ensure API responses provide necessary data for frontend panels
 
 ### 4. GraphQL API (`netbox/core/graphql` - `netbox_go/internal/delivery/graphql`)
-- [ ] Define GraphQL Types based on `graphql/types.py`
-- [ ] Implement GraphQL Resolvers based on `graphql/schema.py`
-- [ ] Port Filters and Mixins from `graphql/filters.py` and `graphql/filter_mixins.py`
+- [x] Define GraphQL Types based on `graphql/types.py`
+- [x] Implement GraphQL Resolvers based on `graphql/schema.py`
+- [x] Port Filters and Mixins from `graphql/filters.py` and `graphql/filter_mixins.py`
 
 ### 5. Management Commands (`netbox/core/management` - `netbox_go/cmd/...`)
 - [x] Port `syncdatasource.py` to a Go CLI command or background worker
@@ -48,9 +48,9 @@ The migration will follow the existing project structure:
 - [ ] Map `tables/` column definitions to API response fields to ensure compatibility with the UI
 
 ### 7. Core Logic & Utils (`netbox/core/` root)
-- [ ] Port `search.py` logic to Postgres FTS (tsvector/tsquery) in Repositories
-- [ ] Port `filtersets.py` to type-safe Specification/Query Builder pattern
-- [ ] Port `jobs.py` and `events.py` to native Go worker pool with DB-backed queue
+- [x] Port `search.py` logic to Postgres FTS (tsvector/tsquery) in Repositories
+- [x] Port `filtersets.py` to type-safe Specification/Query Builder pattern
+- [x] Port `jobs.py` and `events.py` to native Go worker pool with DB-backed queue
 
 ---
 
