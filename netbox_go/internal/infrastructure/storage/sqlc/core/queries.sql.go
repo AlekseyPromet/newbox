@@ -34,7 +34,7 @@ func (q *Queries) ArchiveCompletedJobs(ctx context.Context, completedAt sql.Null
 
 const bulkCreateObjectChanges = `-- name: BulkCreateObjectChanges :exec
 INSERT INTO core_objectchange (
-    time, user_id, request_id, action, changed_object_type, 
+    time, user_id, request_id, action, changed_object_type,
     changed_object_id, object_repr, object_data, related_object_type,
     related_object_id, related_object_repr
 )

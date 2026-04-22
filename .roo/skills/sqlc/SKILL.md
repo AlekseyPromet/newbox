@@ -157,10 +157,10 @@ UPDATE authors SET name = $2, bio = $3 WHERE id = $1 RETURNING *;
 ```
 
 ## 7. Code Generation
-
+для запуска slqc generate ипользуй команду `docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate` где %cd% - заменить на реальный путь к файлу миграции
 Run the generate command:
 ```bash
-sqlc generate
+docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate
 ```
 
 Upon success, sqlc creates the output directory containing:

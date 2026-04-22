@@ -1,5 +1,4 @@
-- общий план переноса приложения написан в netbox_go_migration_plan.md, обновляй его если что то меняешь
-- план переноса модулей написан в 
+- план переноса модулей написан в в netbox_go_migration_plan.md,
  netbox_go_migration_core.md, 
  netbox_go_migration_plan_extras.md,
  обновляй их если что то меняешь
@@ -7,4 +6,8 @@
 - эталонная локаль - русская (ru)
 - для запуска slqc generate ипользуй команду `docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate` где %cd% - заменить на реальный путь к файлу миграции
 - если появяться новые миграции для модулей отмечай их в slqc.yaml
-- если нужно сделать иструкцию `Implementation will call` пиши `// TODO: Implementation will call`
+- если нужно сделать или исправить что-то в будущем то пиши в коментариях `// TODO:`
+- postgres db listening on IPv4 address localhost, port 5432
+- casandra listening on IPv4 address localhost, port 7000 
+- elasticsearch listening on IPv4 address localhost, port 9200
+- kafka listening on IPv4 address localhost, port 9092

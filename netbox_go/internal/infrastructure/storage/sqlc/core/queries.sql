@@ -138,9 +138,9 @@ RETURNING
     changed_object_id, object_repr, object_data, related_object_type,
     related_object_id, related_object_repr;
 
--- name: BulkCreateObjectChanges :copyfrom
+-- name: BulkCreateObjectChanges :exec
 INSERT INTO core_objectchange (
-    time, user_id, request_id, action, changed_object_type, 
+    time, user_id, request_id, action, changed_object_type,
     changed_object_id, object_repr, object_data, related_object_type,
     related_object_id, related_object_repr
 )
@@ -493,7 +493,7 @@ WHERE id = $1 AND status IN ('failed', 'errored');
 -- Bulk Operations
 -- ============================================================================
 
--- name: BulkUpdateObjectTypes :copyfrom
+-- name: BulkUpdateObjectTypes :exec
 INSERT INTO django_content_type (app_label, model, public, features, created, updated)
 VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (app_label, model) DO UPDATE SET
