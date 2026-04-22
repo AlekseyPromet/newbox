@@ -5,6 +5,6 @@
  обновляй их если что то меняешь
 - никогда не используй hardcoded строки на русском в коде
 - эталонная локаль - русская (ru)
-- для запуска slqc generate ипользуй команду `docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate`
+- для запуска slqc generate ипользуй команду `docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate` где %cd% - заменить на реальный путь к файлу миграции
 - если появяться новые миграции для модулей отмечай их в slqc.yaml
 - если нужно сделать иструкцию `Implementation will call` пиши `// TODO: Implementation will call`
