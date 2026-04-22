@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/core/entity"
+	"netbox_go/internal/repository"
+	"netbox_go/pkg/types"
 	"github.com/labstack/echo/v4"
 )
 
@@ -112,16 +112,27 @@ func (h *CoreHandlers) CreateDataSource(c echo.Context) error {
 		return notImplemented(c, "DataSourceRepository")
 	}
 
-	var ds entity.DataSource
-	if err := c.Bind(&ds); err != nil {
+	var req dto.DataSourceRequest
+	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+	}
+
+	ds := &entity.DataSource{
+		Name:         req.Name,
+		Type:         req.Type,
+		SourceURL:    req.SourceURL,
+		Enabled:      req.Enabled,
+		SyncInterval: req.SyncInterval,
+		IgnoreRules:  req.IgnoreRules,
+		Parameters:   req.Parameters,
+		Description:  req.Description,
 	}
 
 	if err := ds.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	if err := h.dataSources.Create(c.Request().Context(), &ds); err != nil {
+	if err := h.dataSources.Create(c.Request().Context(), ds); err != nil {
 		return handleError(err)
 	}
 
@@ -140,12 +151,21 @@ func (h *CoreHandlers) UpdateDataSource(c echo.Context) error {
 		return handleError(err)
 	}
 
-	var input entity.DataSource
-	if err := c.Bind(&input); err != nil {
+	var req dto.DataSourceRequest
+	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
-	input.ID = existing.ID
+	input := *existing
+	input.Name = req.Name
+	input.Type = req.Type
+	input.SourceURL = req.SourceURL
+	input.Enabled = req.Enabled
+	input.SyncInterval = req.SyncInterval
+	input.IgnoreRules = req.IgnoreRules
+	input.Parameters = req.Parameters
+	input.Description = req.Description
+
 	if err := input.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
@@ -419,16 +439,26 @@ func (h *CoreHandlers) CreateJob(c echo.Context) error {
 		return notImplemented(c, "JobRepository")
 	}
 
-	var job entity.Job
-	if err := c.Bind(&job); err != nil {
+	var req dto.JobRequest
+	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+	}
+
+	job := &entity.Job{
+		ObjectType:  req.ObjectType,
+		ObjectID:    req.ObjectID,
+		Status:      req.Status,
+		QueueName:   req.QueueName,
+		ScheduledAt: req.ScheduledAt,
+		UserID:      req.UserID,
+		Object:      req.Object,
 	}
 
 	if err := job.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	if err := h.jobs.Create(c.Request().Context(), &job); err != nil {
+	if err := h.jobs.Create(c.Request().Context(), job); err != nil {
 		return handleError(err)
 	}
 
@@ -505,16 +535,7 @@ func (h *CoreHandlers) LogObjectChange(c echo.Context) error {
 		return notImplemented(c, "ObjectChangeRepository")
 	}
 
-	var req struct {
-		Action     string      `json:"action"`
-		ObjectType string      `json:"object_type"`
-		ObjectID   string      `json:"object_id"`
-		ObjectRepr string      `json:"object_repr"`
-		ObjectData interface{} `json:"object_data,omitempty"`
-		UserID     *string     `json:"user_id,omitempty"`
-		RequestID  *string     `json:"request_id,omitempty"`
-	}
-
+	var req dto.ObjectChangeRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
@@ -654,16 +675,23 @@ func (h *CoreHandlers) CreateConfigRevision(c echo.Context) error {
 		return notImplemented(c, "ConfigRevisionRepository")
 	}
 
-	var cr entity.ConfigRevision
-	if err := c.Bind(&cr); err != nil {
+	var req dto.ConfigRevisionRequest
+	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+	}
+
+	cr := &entity.ConfigRevision{
+		Name:        req.Name,
+		ConfigData:  req.ConfigData,
+		IsActive:    req.IsActive,
+		Description: req.Description,
 	}
 
 	if err := cr.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	if err := h.configRevisions.Create(c.Request().Context(), &cr); err != nil {
+	if err := h.configRevisions.Create(c.Request().Context(), cr); err != nil {
 		return handleError(err)
 	}
 
@@ -682,12 +710,17 @@ func (h *CoreHandlers) UpdateConfigRevision(c echo.Context) error {
 		return handleError(err)
 	}
 
-	var input entity.ConfigRevision
-	if err := c.Bind(&input); err != nil {
+	var req dto.ConfigRevisionRequest
+	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
-	input.ID = existing.ID
+	input := *existing
+	input.Name = req.Name
+	input.ConfigData = req.ConfigData
+	input.IsActive = req.IsActive
+	input.Description = req.Description
+
 	if err := input.Validate(); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}

@@ -5,8 +5,8 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/ipam/enum"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/ipam/enum"
+	"netbox_go/pkg/types"
 )
 
 // VRF представляет Virtual Routing and Forwarding instance

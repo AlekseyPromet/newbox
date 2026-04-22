@@ -11,7 +11,7 @@ import (
 "encoding/json"
 "time"
 
-"github.com/AlekseyPromet/netbox_go/pkg/types"
+"netbox_go/pkg/types"
 )
 
 type DBTX interface {

@@ -4,8 +4,8 @@ package entity
 import (
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/circuits/enum"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/circuits/enum"
+	"netbox_go/pkg/types"
 )
 
 // Provider представляет провайдера телекоммуникационных услуг

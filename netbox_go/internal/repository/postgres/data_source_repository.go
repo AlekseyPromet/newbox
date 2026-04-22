@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
-	core_enum "github.com/AlekseyPromet/netbox_go/internal/domain/core/enum"
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	core_entity "netbox_go/internal/domain/core/entity"
+	core_enum "netbox_go/internal/domain/core/enum"
+	"netbox_go/internal/repository"
+	"netbox_go/pkg/types"
 )
 
 // DataSourceRepositoryPostgres реализует интерфейс DataSourceRepository для PostgreSQL

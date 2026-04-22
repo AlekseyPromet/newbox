@@ -4,7 +4,7 @@ package serializers
 import (
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/extras/enum"
+	"netbox_go/internal/domain/extras/enum"
 )
 
 // CustomFieldChoiceSet представляет набор выборов для пользовательского поля

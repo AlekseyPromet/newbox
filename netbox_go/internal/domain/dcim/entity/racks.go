@@ -3,8 +3,8 @@ package entity
 import (
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/dcim/enum"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/dcim/enum"
+	"netbox_go/pkg/types"
 )
 
 // RackType представляет тип стойки - шаблон для стоек

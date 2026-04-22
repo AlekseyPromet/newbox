@@ -4,10 +4,10 @@ package entity
 import (
 	"time"
 
-	dcim_entity "github.com/AlekseyPromet/netbox_go/internal/domain/dcim/entity"
-	"github.com/AlekseyPromet/netbox_go/internal/domain/dcim/enum"
-	ipam_entity "github.com/AlekseyPromet/netbox_go/internal/domain/ipam/entity"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	dcim_entity "netbox_go/internal/domain/dcim/entity"
+	"netbox_go/internal/domain/dcim/enum"
+	ipam_entity "netbox_go/internal/domain/ipam/entity"
+	"netbox_go/pkg/types"
 )
 
 // ClusterType представляет тип кластера виртуализации

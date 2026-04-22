@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/core/enum"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/core/enum"
+	"netbox_go/pkg/types"
 )
 
 // ConfigRevision представляет сохранённую ревизию конфигурации NetBox.

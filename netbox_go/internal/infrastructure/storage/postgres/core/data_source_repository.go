@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
-	"github.com/AlekseyPromet/netbox_go/internal/domain/core/repository"
-	coredb "github.com/AlekseyPromet/netbox_go/internal/infrastructure/storage/sqlc/core"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/core/entity"
+	"netbox_go/internal/domain/core/repository"
+	coredb "netbox_go/internal/infrastructure/storage/sqlc/core"
+	"netbox_go/pkg/types"
 )
 
 // DataSourcePostgresRepository реализует DataSourceRepository для PostgreSQL

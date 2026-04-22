@@ -4,7 +4,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
+	"netbox_go/internal/repository"
 	"github.com/labstack/echo/v4"
 )
 

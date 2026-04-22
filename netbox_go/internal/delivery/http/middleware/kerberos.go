@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/pkg/types"
 	"github.com/labstack/echo/v4"
 )
 

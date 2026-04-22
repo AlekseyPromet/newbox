@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/tasks/entity"
-	taskrepo "github.com/AlekseyPromet/netbox_go/internal/domain/tasks/repository"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/tasks/entity"
+	taskrepo "netbox_go/internal/domain/tasks/repository"
+	"netbox_go/pkg/types"
 )
 
 var (

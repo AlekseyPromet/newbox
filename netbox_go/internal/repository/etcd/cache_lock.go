@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/pkg/types"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 

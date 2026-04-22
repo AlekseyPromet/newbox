@@ -4,7 +4,7 @@ package entity
 import (
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/pkg/types"
 )
 
 // OwnerGroup представляет группу владельцев объектов

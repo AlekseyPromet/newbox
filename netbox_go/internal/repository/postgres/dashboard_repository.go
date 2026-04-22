@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/extras/entity"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/extras/entity"
+	"netbox_go/pkg/types"
 )
 
 // DashboardRepositoryPostgres реализует интерфейс DashboardRepository для PostgreSQL

@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	account_entity "github.com/AlekseyPromet/netbox_go/internal/domain/account/entity"
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	account_entity "netbox_go/internal/domain/account/entity"
+	"netbox_go/internal/repository"
+	"netbox_go/pkg/types"
 )
 
 // AccountRepositoryMemory реализует UserTokenRepository, BookmarkRepository, NotificationRepository,

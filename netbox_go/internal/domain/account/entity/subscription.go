@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/pkg/types"
 )
 
 // Subscription represents a user subscription to object changes/notifications

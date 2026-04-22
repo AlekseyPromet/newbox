@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
-	"github.com/AlekseyPromet/netbox_go/internal/pkg/taskqueue"
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/core/entity"
+	"netbox_go/internal/pkg/taskqueue"
+	"netbox_go/internal/repository"
+	"netbox_go/pkg/types"
 )
 
 // JobService сервис для управления задачами

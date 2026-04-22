@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/pkg/types"
 )
 
 // UserConfig represents user preferences/config stored as JSON blob

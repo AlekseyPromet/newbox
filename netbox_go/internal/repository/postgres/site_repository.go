@@ -6,9 +6,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/dcim/entity"
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/dcim/entity"
+	"netbox_go/internal/repository"
+	"netbox_go/pkg/types"
 )
 
 // SiteRepositoryPostgres реализует интерфейс SiteRepository для PostgreSQL

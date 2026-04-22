@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
-	"github.com/AlekseyPromet/netbox_go/internal/repository"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	core_entity "netbox_go/internal/domain/core/entity"
+	"netbox_go/internal/repository"
+	"netbox_go/pkg/types"
 )
 
 // ObjectChangeRepositoryPostgres реализует интерфейс ObjectChangeRepository для PostgreSQL

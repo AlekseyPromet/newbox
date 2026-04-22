@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/pkg/types"
 )
 
 // TokenVersion представляет версию токена

@@ -2,7 +2,7 @@
 package dashboard
 
 import (
-	"github.com/AlekseyPromet/netbox_go/extras/dashboard/widgets"
+	"netbox_go/extras/dashboard/widgets"
 )
 
 // Export widget types for convenience

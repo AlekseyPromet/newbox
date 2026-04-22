@@ -5,8 +5,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/internal/domain/core/entity"
+	"netbox_go/pkg/types"
 )
 
 // ConfigRevisionRepository интерфейс для работы с ревизиями конфигурации

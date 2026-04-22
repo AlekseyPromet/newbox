@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	"netbox_go/pkg/types"
 )
 
 // Bookmark represents a user bookmark to an object or URL

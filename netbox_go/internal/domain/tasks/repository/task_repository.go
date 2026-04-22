@@ -4,7 +4,7 @@ package repository
 import (
 	"context"
 
-	"github.com/AlekseyPromet/netbox_go/internal/domain/tasks/entity"
+	"netbox_go/internal/domain/tasks/entity"
 )
 
 // WorkTypeRepository определяет интерфейс для работы с видами работ

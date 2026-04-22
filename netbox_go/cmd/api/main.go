@@ -15,9 +15,9 @@ import (
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 
-	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/handlers"
-	"github.com/AlekseyPromet/netbox_go/internal/delivery/http/middleware"
-	"github.com/AlekseyPromet/netbox_go/internal/repository/postgres"
+	"netbox_go/internal/delivery/http/handlers"
+	"netbox_go/internal/delivery/http/middleware"
+	"netbox_go/internal/repository/postgres"
 )
 
 func main() {

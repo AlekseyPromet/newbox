@@ -5,14 +5,14 @@ import (
 	"context"
 	"time"
 
-	account_entity "github.com/AlekseyPromet/netbox_go/internal/domain/account/entity"
-	core_entity "github.com/AlekseyPromet/netbox_go/internal/domain/core/entity"
-	dcim_entity "github.com/AlekseyPromet/netbox_go/internal/domain/dcim/entity"
-	extras_entity "github.com/AlekseyPromet/netbox_go/internal/domain/extras/entity"
-	users_entity "github.com/AlekseyPromet/netbox_go/internal/domain/users/entity"
-	"github.com/AlekseyPromet/netbox_go/pkg/types"
+	account_entity "netbox_go/internal/domain/account/entity"
+	core_entity "netbox_go/internal/domain/core/entity"
+	dcim_entity "netbox_go/internal/domain/dcim/entity"
+	extras_entity "netbox_go/internal/domain/extras/entity"
+	users_entity "netbox_go/internal/domain/users/entity"
+	"netbox_go/pkg/types"
 
-	circuits_entity "github.com/AlekseyPromet/netbox_go/internal/domain/circuits/entity"
+	circuits_entity "netbox_go/internal/domain/circuits/entity"
 )
 
 // SiteRepository определяет интерфейс для работы с сайтами

@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/AlekseyPromet/netbox_go/extras/dashboard/widgets"
+	"netbox_go/extras/dashboard/widgets"
 	"github.com/google/uuid"
 )
 
