@@ -11,3 +11,4 @@
 - casandra listening on IPv4 address localhost, port 7000 
 - elasticsearch listening on IPv4 address localhost, port 9200
 - kafka listening on IPv4 address localhost, port 9092
+- influxdb listening on IPv4 address localhost, port 8086
