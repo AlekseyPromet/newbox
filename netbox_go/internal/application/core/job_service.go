@@ -43,18 +43,18 @@ func (s *JobService) CreateJob(ctx context.Context, params CreateJobParams) (*en
 
 	job := &entity.Job{
 		ID:          types.ID{},
-		ObjectType:  &params.ObjectType,
+		ObjectType:  params.ObjectType,
 		Name:        params.Name,
 		Status:      "pending",
 		Interval:    params.Interval,
-		ScheduledAt: params.ScheduledAt,
+		ScheduledAt: *params.ScheduledAt,
 		Created:     now,
 		Updated:     now,
 	}
 
 	if params.ObjectID != "" {
 		objID := types.ID{}
-		job.ObjectID = &objID
+		job.ObjectID = objID
 	}
 
 	if err := s.jobRepo.Create(ctx, job); err != nil {
@@ -88,7 +88,7 @@ func (s *JobService) ScheduleJob(ctx context.Context, jobID string, scheduledAt 
 		return fmt.Errorf("failed to get job: %w", err)
 	}
 
-	job.ScheduledAt = &scheduledAt
+	job.ScheduledAt = scheduledAt
 	job.Status = "scheduled"
 	job.Updated = time.Now()
 

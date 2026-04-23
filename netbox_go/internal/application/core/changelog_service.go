@@ -8,6 +8,7 @@ import (
 	"netbox_go/internal/domain/core/entity"
 	"netbox_go/internal/repository"
 	"netbox_go/pkg/types"
+
 	"github.com/google/uuid"
 )
 
@@ -29,17 +30,17 @@ func NewChangeLogService(
 
 // LogChangeParams параметры для логирования изменения
 type LogChangeParams struct {
-	Action          types.Status
-	ObjectType      string
-	ObjectID        string
-	ObjectRepr      string
-	PreChangeData   interface{}
-	PostChangeData  interface{}
-	UserID          *types.ID
-	UserName        string
-	RequestID       *string
-	RelatedObject   *RelatedObjectInfo
-	Message         string
+	Action         types.Status
+	ObjectType     string
+	ObjectID       string
+	ObjectRepr     string
+	PreChangeData  interface{}
+	PostChangeData interface{}
+	UserID         *types.ID
+	UserName       string
+	RequestID      *string
+	RelatedObject  *RelatedObjectInfo
+	Message        string
 }
 
 // RelatedObjectInfo информация о связанном объекте
@@ -71,7 +72,7 @@ func (s *ChangeLogService) LogChange(ctx context.Context, params LogChangeParams
 
 	oc := &entity.ObjectChange{
 		Time:              time.Now(),
-		UserID:            params.UserID,
+		UserID:            *params.UserID,
 		RequestID:         requestID,
 		Action:            params.Action,
 		ChangedObjectType: params.ObjectType,
