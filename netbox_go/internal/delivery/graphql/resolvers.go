@@ -2,7 +2,10 @@ package graphql
 
 import (
 	"context"
+	"fmt"
 	"netbox_go/internal/domain/core/services"
+	"netbox_go/internal/repository"
+	"time"
 )
 
 // Resolver handles GraphQL queries
@@ -29,12 +32,12 @@ func (r *Resolver) DataFile(ctx context.Context, args struct {
 	}
 
 	return &DataFileType{
-		ID:          df.ID,
+		ID:          df.ID.String(),
 		Path:        df.Path,
 		Size:        df.Size,
 		Hash:        df.Hash,
 		Created:     df.Created.Format(time.RFC3339),
-		LastUpdated: df.LastUpdated.Format(time.RFC3339),
+		LastUpdated: df.Updated.Format(time.RFC3339),
 		Source:      nil,
 	}, nil
 }
@@ -54,7 +57,17 @@ func (r *Resolver) DataFileList(ctx context.Context, args struct {
 		offset = *args.Offset
 	}
 
-	dfs, err := r.coreService.ListDataFiles(ctx, args.Filter, limit, offset)
+	var filter repository.DataFileFilter
+	if args.Filter != nil {
+		if args.Filter.SourceID != nil {
+			filter.SourceID = args.Filter.SourceID
+		}
+		if args.Filter.Path != nil && args.Filter.Path.Exact != nil {
+			filter.Path = args.Filter.Path.Exact
+		}
+	}
+	dfs, total, err := r.coreService.ListDataFiles(ctx, filter, limit, offset)
+	_ = total
 	if err != nil {
 		return nil, err
 	}
@@ -62,12 +75,12 @@ func (r *Resolver) DataFileList(ctx context.Context, args struct {
 	var result []*DataFileType
 	for _, df := range dfs {
 		result = append(result, &DataFileType{
-			ID:          df.ID,
+			ID:          df.ID.String(),
 			Path:        df.Path,
 			Size:        df.Size,
 			Hash:        df.Hash,
 			Created:     df.Created.Format(time.RFC3339),
-			LastUpdated: df.LastUpdated.Format(time.RFC3339),
+			LastUpdated: df.Updated.Format(time.RFC3339),
 			Source:      nil,
 		})
 	}
@@ -87,15 +100,15 @@ func (r *Resolver) DataSource(ctx context.Context, args struct {
 	}
 
 	return &DataSourceType{
-		ID:          ds.ID,
+		ID:          ds.ID.String(),
 		Name:        ds.Name,
 		Type:        ds.Type,
 		SourceURL:   ds.SourceURL,
 		Status:      string(ds.Status),
 		Enabled:     ds.Enabled,
-		IgnoreRules: ds.IgnoreRules,
+		IgnoreRules: fmt.Sprintf("%v", ds.IgnoreRules),
 		Parameters:  ds.Parameters,
-		LastSynced:  ds.LastSynced.Format(time.RFC3339),
+		LastSynced:  "",
 		DataFiles:   nil,
 	}, nil
 }
@@ -115,7 +128,23 @@ func (r *Resolver) DataSourceList(ctx context.Context, args struct {
 		offset = *args.Offset
 	}
 
-	dss, err := r.coreService.ListDataSources(ctx, args.Filter, limit, offset)
+	var filter repository.DataSourceFilter
+	if args.Filter != nil {
+		if args.Filter.Name != nil && args.Filter.Name.Exact != nil {
+			filter.Name = args.Filter.Name.Exact
+		}
+		if args.Filter.Type != nil && args.Filter.Type.Exact != nil {
+			filter.Type = args.Filter.Type.Exact
+		}
+		if args.Filter.Status != nil {
+			filter.Status = args.Filter.Status
+		}
+		if args.Filter.Enabled != nil {
+			filter.Enabled = args.Filter.Enabled
+		}
+	}
+	dss, total, err := r.coreService.ListDataSources(ctx, filter, limit, offset)
+	_ = total
 	if err != nil {
 		return nil, err
 	}
@@ -123,15 +152,15 @@ func (r *Resolver) DataSourceList(ctx context.Context, args struct {
 	var result []*DataSourceType
 	for _, ds := range dss {
 		result = append(result, &DataSourceType{
-			ID:          ds.ID,
+			ID:          ds.ID.String(),
 			Name:        ds.Name,
 			Type:        ds.Type,
 			SourceURL:   ds.SourceURL,
 			Status:      string(ds.Status),
 			Enabled:     ds.Enabled,
-			IgnoreRules: ds.IgnoreRules,
+			IgnoreRules: fmt.Sprintf("%v", ds.IgnoreRules),
 			Parameters:  ds.Parameters,
-			LastSynced:  ds.LastSynced.Format(time.RFC3339),
+			LastSynced:  "",
 			DataFiles:   nil,
 		})
 	}

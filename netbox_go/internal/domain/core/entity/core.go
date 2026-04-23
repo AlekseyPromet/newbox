@@ -11,11 +11,13 @@ import (
 
 // ConfigRevision представляет сохранённую ревизию конфигурации NetBox.
 type ConfigRevision struct {
-	ID      types.ID        `json:"id"`
-	Created time.Time       `json:"created"`
-	Active  bool            `json:"active"`
-	Comment string          `json:"comment,omitempty"`
-	Data    json.RawMessage `json:"data,omitempty"`
+	ID          types.ID        `json:"id"`
+	Created     time.Time       `json:"created"`
+	Active      bool            `json:"active"`
+	Name        string          `json:"name,omitempty"`
+	Description string          `json:"description,omitempty"`
+	Comment     string          `json:"comment,omitempty"`
+	Data        json.RawMessage `json:"data,omitempty"`
 }
 
 // Validate проверяет корректность ревизии конфигурации.
@@ -85,6 +87,7 @@ type DataSource struct {
 	Status       types.Status    `json:"status"`
 	Enabled      bool            `json:"enabled"`
 	SyncInterval int             `json:"sync_interval"` // минуты
+	Description  string          `json:"description,omitempty"`
 	IgnoreRules  []string        `json:"ignore_rules,omitempty"`
 	Parameters   json.RawMessage `json:"parameters,omitempty"`
 	LastSynced   *time.Time      `json:"last_synced,omitempty"`
@@ -138,6 +141,8 @@ type Job struct {
 	ID          types.ID        `json:"id"`
 	ObjectType  *string         `json:"object_type,omitempty"`
 	ObjectID    *types.ID       `json:"object_id,omitempty"`
+	UserID      *types.ID       `json:"user_id,omitempty"`
+	Object      interface{}     `json:"object,omitempty"`
 	Name        string          `json:"name"`
 	Status      types.Status    `json:"status"`
 	Interval    int             `json:"interval,omitempty"` // минуты

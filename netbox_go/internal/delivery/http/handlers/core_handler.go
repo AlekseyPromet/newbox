@@ -12,6 +12,7 @@ import (
 	"netbox_go/internal/domain/core/entity"
 	"netbox_go/internal/repository"
 	"netbox_go/pkg/types"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -112,7 +113,16 @@ func (h *CoreHandlers) CreateDataSource(c echo.Context) error {
 		return notImplemented(c, "DataSourceRepository")
 	}
 
-	var req dto.DataSourceRequest
+	var req struct {
+		Name         string          `json:"name"`
+		Type         string          `json:"type"`
+		SourceURL    string          `json:"source_url"`
+		Enabled      bool            `json:"enabled"`
+		SyncInterval int             `json:"sync_interval"`
+		IgnoreRules  []string        `json:"ignore_rules"`
+		Parameters   json.RawMessage `json:"parameters"`
+		Description  string          `json:"description"`
+	}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
@@ -151,7 +161,16 @@ func (h *CoreHandlers) UpdateDataSource(c echo.Context) error {
 		return handleError(err)
 	}
 
-	var req dto.DataSourceRequest
+	var req struct {
+		Name         string          `json:"name"`
+		Type         string          `json:"type"`
+		SourceURL    string          `json:"source_url"`
+		Enabled      bool            `json:"enabled"`
+		SyncInterval int             `json:"sync_interval"`
+		IgnoreRules  []string        `json:"ignore_rules"`
+		Parameters   json.RawMessage `json:"parameters"`
+		Description  string          `json:"description"`
+	}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
@@ -439,7 +458,16 @@ func (h *CoreHandlers) CreateJob(c echo.Context) error {
 		return notImplemented(c, "JobRepository")
 	}
 
-	var req dto.JobRequest
+	var req struct {
+		Name        string       `json:"name"`
+		ObjectType  *string      `json:"object_type"`
+		ObjectID    *types.ID    `json:"object_id"`
+		Status      types.Status `json:"status"`
+		QueueName   string       `json:"queue_name"`
+		ScheduledAt *time.Time   `json:"scheduled_at"`
+		UserID      *types.ID    `json:"user_id"`
+		Object      interface{}  `json:"object"`
+	}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
@@ -535,7 +563,15 @@ func (h *CoreHandlers) LogObjectChange(c echo.Context) error {
 		return notImplemented(c, "ObjectChangeRepository")
 	}
 
-	var req dto.ObjectChangeRequest
+	var req struct {
+		Action     string          `json:"action"`
+		ObjectType string          `json:"object_type"`
+		ObjectID   string          `json:"object_id"`
+		ObjectRepr string          `json:"object_repr"`
+		ObjectData json.RawMessage `json:"object_data"`
+		UserID     *string         `json:"user_id"`
+		RequestID  *string         `json:"request_id"`
+	}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
@@ -675,15 +711,20 @@ func (h *CoreHandlers) CreateConfigRevision(c echo.Context) error {
 		return notImplemented(c, "ConfigRevisionRepository")
 	}
 
-	var req dto.ConfigRevisionRequest
+	var req struct {
+		Name        string `json:"name"`
+		Data        string `json:"data"`
+		IsActive    bool   `json:"is_active"`
+		Description string `json:"description"`
+	}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	cr := &entity.ConfigRevision{
 		Name:        req.Name,
-		ConfigData:  req.ConfigData,
-		IsActive:    req.IsActive,
+		Data:        json.RawMessage(req.Data),
+		Active:      req.IsActive,
 		Description: req.Description,
 	}
 
@@ -710,15 +751,20 @@ func (h *CoreHandlers) UpdateConfigRevision(c echo.Context) error {
 		return handleError(err)
 	}
 
-	var req dto.ConfigRevisionRequest
+	var req struct {
+		Name        string `json:"name"`
+		Data        string `json:"data"`
+		IsActive    bool   `json:"is_active"`
+		Description string `json:"description"`
+	}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	input := *existing
 	input.Name = req.Name
-	input.ConfigData = req.ConfigData
-	input.IsActive = req.IsActive
+	input.Data = json.RawMessage(req.Data)
+	input.Active = req.IsActive
 	input.Description = req.Description
 
 	if err := input.Validate(); err != nil {

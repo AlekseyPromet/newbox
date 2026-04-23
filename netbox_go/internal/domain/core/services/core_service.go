@@ -2,22 +2,24 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"netbox_go/internal/domain/core/entity"
 	"netbox_go/internal/repository"
-	"netbox_go/pkg/types"
 )
 
 // CoreService предоставляет бизнес-логику для домена Core.
 type CoreService struct {
 	dataSources repository.DataSourceRepository
+	dataFiles   repository.DataFileRepository
 }
 
 // NewCoreService создает новый экземпляр CoreService.
-func NewCoreService(ds repository.DataSourceRepository) *CoreService {
+func NewCoreService(ds repository.DataSourceRepository, df repository.DataFileRepository) *CoreService {
 	return &CoreService{
 		dataSources: ds,
+		dataFiles:   df,
 	}
 }
 
@@ -38,12 +40,12 @@ func (s *CoreService) BulkEditDataSources(ctx context.Context, ids []string, upd
 			existing.Enabled = *val
 		}
 		if val, ok := updates["sync_interval"].(int); ok {
-			existing.SyncInterval = &val
+			existing.SyncInterval = val
 		}
 		if val, ok := updates["parameters"].(string); ok {
-			existing.Parameters = val
+			existing.Parameters = json.RawMessage(val)
 		}
-		if val, ok := updates["ignore_rules"].(string); ok {
+		if val, ok := updates["ignore_rules"].([]string); ok {
 			existing.IgnoreRules = val
 		}
 		if val, ok := updates["description"].(string); ok {
@@ -57,8 +59,29 @@ func (s *CoreService) BulkEditDataSources(ctx context.Context, ids []string, upd
 		if err := s.dataSources.Update(ctx, existing); err != nil {
 			return fmt.Errorf("failed to update data source %s: %w", id, err)
 		}
+
 	}
 	return nil
+}
+
+func (s *CoreService) GetDataSource(ctx context.Context, id string) (*entity.DataSource, error) {
+	return s.dataSources.GetByID(ctx, id)
+}
+
+func (s *CoreService) ListDataSources(ctx context.Context, filter repository.DataSourceFilter, limit, offset int) ([]*entity.DataSource, int64, error) {
+	filter.Limit = limit
+	filter.Offset = offset
+	return s.dataSources.List(ctx, filter)
+}
+
+func (s *CoreService) GetDataFile(ctx context.Context, id string) (*entity.DataFile, error) {
+	return s.dataFiles.GetByID(ctx, id)
+}
+
+func (s *CoreService) ListDataFiles(ctx context.Context, filter repository.DataFileFilter, limit, offset int) ([]*entity.DataFile, int64, error) {
+	filter.Limit = limit
+	filter.Offset = offset
+	return s.dataFiles.List(ctx, filter)
 }
 
 // BulkImportDataSources обрабатывает импорт источников данных.

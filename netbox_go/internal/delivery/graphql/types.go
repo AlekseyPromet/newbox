@@ -1,31 +1,27 @@
 package graphql
 
-import (
-	"netbox_go/internal/domain/core/entity"
-)
-
 // DataFileType represents the GraphQL type for DataFile
 type DataFileType struct {
-	ID          string           `json:"id"`
-	Path        string           `json:"path"`
-	Size        int64            `json:"size"`
-	Hash        string           `json:"hash"`
-	Created     string           `json:"created"`
-	LastUpdated string           `json:"last_updated"`
-	Source      *DataSourceType  `json:"source"`
+	ID          string          `json:"id"`
+	Path        string          `json:"path"`
+	Size        int64           `json:"size"`
+	Hash        string          `json:"hash"`
+	Created     string          `json:"created"`
+	LastUpdated string          `json:"last_updated"`
+	Source      *DataSourceType `json:"source"`
 }
 
 // DataSourceType represents the GraphQL type for DataSource
 type DataSourceType struct {
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	Type        string         `json:"type"`
-	SourceURL   string         `json:"source_url"`
-	Status      string         `json:"status"`
-	Enabled     bool           `json:"enabled"`
-	IgnoreRules string         `json:"ignore_rules"`
-	Parameters  interface{}    `json:"parameters"`
-	LastSynced  string         `json:"last_synced"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Type        string          `json:"type"`
+	SourceURL   string          `json:"source_url"`
+	Status      string          `json:"status"`
+	Enabled     bool            `json:"enabled"`
+	IgnoreRules string          `json:"ignore_rules"`
+	Parameters  interface{}     `json:"parameters"`
+	LastSynced  string          `json:"last_synced"`
 	DataFiles   []*DataFileType `json:"datafiles"`
 }
 
@@ -47,7 +43,7 @@ type ObjectChangeType struct {
 
 // ContentType represents the GraphQL type for ContentType
 type ContentType struct {
-	ID        string `json:"id"`
-	AppLabel  string `json:"app_label"`
-	Model     string `json:"model"`
+	ID       string `json:"id"`
+	AppLabel string `json:"app_label"`
+	Model    string `json:"model"`
 }
