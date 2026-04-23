@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"netbox_go/internal/domain/core/entity"
@@ -119,14 +120,17 @@ func (r *DataSourcePostgresRepository) BulkCreate(ctx context.Context, data []en
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err = tx.Rollback()
+		if err != nil {
+			log.Printf("BulkCreate error %v\n", err)
+		}
+	}()
 
-	stmt, err := tx.PrepareContext(ctx, `
-		INSERT INTO core_datasource
-			(name, type, source_url, status, enabled, sync_interval,
-			 ignore_rules, parameters, last_synced, created, updated)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-	`)
+	stmt, err := tx.PrepareContext(ctx, `INSERT INTO core_datasource
+		(name, type, source_url, status, enabled, sync_interval,
+		ignore_rules, parameters, last_synced, created, updated)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`)
 	if err != nil {
 		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
@@ -287,8 +291,11 @@ func (r *DataSourcePostgresRepository) List(ctx context.Context, filter reposito
 		}
 
 		var ignoreRules []string
-		if row.IgnoreRules != nil {
-			types.UnmarshalJSON(row.IgnoreRules, &ignoreRules)
+		if len(row.IgnoreRules) != 0 {
+			err = types.UnmarshalJSON(row.IgnoreRules, &ignoreRules)
+			if err != nil {
+				return nil, 0, err
+			}
 		}
 
 		var lastSynced *time.Time
