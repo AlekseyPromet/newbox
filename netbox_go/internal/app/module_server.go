@@ -2,9 +2,9 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
@@ -18,14 +18,15 @@ var ModuleServer = fx.Options(
 func StartServer(lc fx.Lifecycle, e *echo.Echo) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			port := os.Getenv("PORT")
-			if port == "" {
-				port = "8080"
+			cfg := GetConfig()
+			port := cfg.Server.Port
+			if port == 0 {
+				port = 8080
 			}
 
-			log.Printf("Starting HTTP server on port %s", port)
+			log.Printf("Starting HTTP server on port %d", port)
 			go func() {
-				if err := e.Start(":" + port); err != nil && err != http.ErrServerClosed {
+				if err := e.Start(fmt.Sprintf(":%d", port)); err != nil && err != http.ErrServerClosed {
 					log.Fatalf("HTTP server failed: %v", err)
 				}
 			}()

@@ -3,7 +3,6 @@ package app
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -21,9 +20,20 @@ var ModuleInfra = fx.Options(
 )
 
 func NewDatabase() (*sql.DB, error) {
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		dsn = "postgres://netbox:netbox@localhost:5432/netbox?sslmode=disable"
+	cfg := GetConfig()
+
+	var dsn string
+	if cfg.Database.URL != "" {
+		dsn = cfg.Database.URL
+	} else {
+		dsn = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+			cfg.Database.User,
+			cfg.Database.Password,
+			cfg.Database.Host,
+			cfg.Database.Port,
+			cfg.Database.Name,
+			cfg.Database.SSLMode,
+		)
 	}
 
 	db, err := sql.Open("postgres", dsn)
