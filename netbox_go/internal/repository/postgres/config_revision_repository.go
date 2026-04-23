@@ -164,7 +164,12 @@ func (r *ConfigRevisionRepositoryPostgres) Activate(ctx context.Context, id stri
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err = tx.Rollback()
+		if err != nil {
+			fmt.Printf("Activate error %v\n", err)
+		}
+	}()
 
 	// Деактивируем все ревизии
 	_, err = tx.ExecContext(ctx, `UPDATE core_config_revisions SET active = FALSE WHERE active = TRUE`)

@@ -285,7 +285,7 @@ func (r *ObjectChangeRepositoryPostgres) GetChangesForObject(ctx context.Context
 	}
 
 	query += " ORDER BY time DESC"
-	query += fmt.Sprintf(" LIMIT $3 OFFSET $4")
+	query += " LIMIT $3 OFFSET $4"
 
 	rows, err := r.db.QueryContext(ctx, query, objectType, objectID, limit, offset)
 	if err != nil {

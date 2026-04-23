@@ -241,7 +241,12 @@ func (r *DataFileRepositoryPostgres) BulkCreate(ctx context.Context, files []*co
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err = tx.Rollback()
+		if err != nil {
+			fmt.Printf("BulkCreate error %v\n", err)
+		}
+	}()
 
 	query := `
 		INSERT INTO core_data_files (id, source_id, path, file_type, size, hash, data, created, updated)
@@ -271,7 +276,12 @@ func (r *DataFileRepositoryPostgres) BulkUpdate(ctx context.Context, files []*co
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err = tx.Rollback()
+		if err != nil {
+			fmt.Printf("BulkUpdate error %v\n", err)
+		}
+	}()
 
 	query := `
 		UPDATE core_data_files
@@ -314,7 +324,12 @@ func (r *DataFileRepositoryPostgres) BulkDelete(ctx context.Context, ids []strin
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		err = tx.Rollback()
+		if err != nil {
+			fmt.Printf("BulkDelete error %v\n", err)
+		}
+	}()
 
 	query := `UPDATE core_data_files SET deleted_at = NOW() WHERE id = ANY($1)`
 
