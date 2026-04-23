@@ -146,4 +146,5 @@ type DjangoContentType struct {
 
 type Queries struct {
 	DB *sql.DB
+	TX *sql.Tx
 }

@@ -3,6 +3,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"netbox_go/internal/domain/core/entity"
@@ -57,6 +58,24 @@ type ObjectChangeRepository interface {
 	DeleteOld(ctx context.Context, cutoffTime time.Time) (int64, error)
 }
 
+// DataSourceBulkUpdateParams параметры для массового обновления источников данных
+type DataSourceBulkUpdateParams struct {
+	Type         *string
+	Enabled      *bool
+	Description  *string
+	SyncInterval *string
+	Parameters   *json.RawMessage
+	IgnoreRules  *string
+	Comments     *string
+}
+
+// HasChanges проверяет, есть ли в параметрах поля для обновления
+func (p DataSourceBulkUpdateParams) HasChanges() bool {
+	return p.Type != nil || p.Enabled != nil || p.Description != nil ||
+		p.SyncInterval != nil || p.Parameters != nil ||
+		p.IgnoreRules != nil || p.Comments != nil
+}
+
 // DataSourceRepository интерфейс для источников данных
 type DataSourceRepository interface {
 	// GetByID возвращает источник данных по ID
@@ -75,6 +94,18 @@ type DataSourceRepository interface {
 	UpdateStatus(ctx context.Context, id types.ID, status types.Status, lastSynced *time.Time) error
 	// GetQueuedForSync возвращает источники, ожидающие синхронизации
 	GetQueuedForSync(ctx context.Context, limit int) ([]*entity.DataSource, error)
+	// BulkCreate создаёт несколько источников данных
+	BulkCreate(ctx context.Context, data []entity.DataSource) error
+	// BulkUpdate обновляет несколько источников данных
+	BulkUpdate(ctx context.Context, ids []int64, params DataSourceBulkUpdateParams) error
+}
+
+// FileStorage интерфейс для физического хранения файлов
+type FileStorage interface {
+	// Save сохраняет содержимое в хранилище и возвращает путь к файлу
+	Save(ctx context.Context, fileName string, content []byte) (string, error)
+	// Delete удаляет файл по указанному пути
+	Delete(ctx context.Context, path string) error
 }
 
 // DataFileRepository интерфейс для файлов данных

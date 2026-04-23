@@ -54,7 +54,7 @@ func (r *ObjectChangeRepositoryPostgres) GetByID(ctx context.Context, id string)
 	// Заполнение опциональных полей
 	if userID.Valid {
 		uid, _ := types.ParseID(userID.String)
-		oc.UserID = &uid
+		oc.UserID = uid
 	}
 	if requestID.Valid {
 		oc.RequestID = &requestID.String
@@ -173,7 +173,7 @@ func (r *ObjectChangeRepositoryPostgres) List(ctx context.Context, filter reposi
 
 		if userID.Valid {
 			uid, _ := types.ParseID(userID.String)
-			oc.UserID = &uid
+			oc.UserID = uid
 		}
 		if requestID.Valid {
 			oc.RequestID = &requestID.String
@@ -207,7 +207,7 @@ func (r *ObjectChangeRepositoryPostgres) Create(ctx context.Context, change *cor
 	`
 
 	var userID *string
-	if change.UserID != nil {
+	if change.UserID.IsNuul() {
 		uid := change.UserID.String()
 		userID = &uid
 	}
@@ -255,7 +255,7 @@ func (r *ObjectChangeRepositoryPostgres) LogChange(ctx context.Context, action t
 	change := &core_entity.ObjectChange{
 		ID:                types.NewID(),
 		Time:              time.Now(),
-		UserID:            userID,
+		UserID:            *userID,
 		RequestID:         requestID,
 		Action:            action,
 		ChangedObjectType: objectType,
@@ -312,7 +312,7 @@ func (r *ObjectChangeRepositoryPostgres) GetChangesForObject(ctx context.Context
 
 		if userID.Valid {
 			uid, _ := types.ParseID(userID.String)
-			oc.UserID = &uid
+			oc.UserID = uid
 		}
 		if requestID.Valid {
 			oc.RequestID = &requestID.String

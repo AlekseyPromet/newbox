@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	coredb "netbox_go/internal/infrastructure/storage/sqlc/core"
 	"netbox_go/pkg/types"
 
+	"github.com/lib/pq"
 	"github.com/sqlc-dev/pqtype"
 )
 
@@ -104,6 +106,119 @@ func (r *DataSourcePostgresRepository) GetByName(ctx context.Context, name strin
 		Created:      row.Created,
 		Updated:      row.Updated,
 	}, nil
+}
+
+// BulkCreate создаёт несколько источников данных.
+// Использует транзакцию для атомарности.
+func (r *DataSourcePostgresRepository) BulkCreate(ctx context.Context, data []entity.DataSource) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.PrepareContext(ctx, `
+		INSERT INTO core_datasource
+			(name, type, source_url, status, enabled, sync_interval,
+			 ignore_rules, parameters, last_synced, created, updated)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
+	for _, ds := range data {
+		var ignoreRules, parameters []byte
+		if len(ds.IgnoreRules) > 0 {
+			ignoreRules, _ = json.Marshal(ds.IgnoreRules)
+		}
+		if len(ds.Parameters) > 0 {
+			parameters = ds.Parameters
+		}
+
+		_, err := stmt.ExecContext(ctx,
+			ds.Name, ds.Type, ds.SourceURL, string(ds.Status), ds.Enabled, ds.SyncInterval,
+			ignoreRules, parameters, ds.LastSynced, ds.Created, ds.Updated,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create data source %s: %w", ds.Name, err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+// BulkUpdate обновляет несколько источников данных с указанными параметрами.
+// Использует COALESCE для частичного обновления - nil поля сохраняют существующие значения.
+func (r *DataSourcePostgresRepository) BulkUpdate(ctx context.Context, ids []int64, params repository.DataSourceBulkUpdateParams) error {
+	if len(ids) == 0 || !params.HasChanges() {
+		return nil
+	}
+
+	query := `
+		UPDATE core_datasource
+		SET
+			type = COALESCE($1, type),
+			enabled = COALESCE($2, enabled),
+			description = COALESCE($3, description),
+			sync_interval = COALESCE($4, sync_interval),
+			parameters = COALESCE($5, parameters),
+			ignore_rules = COALESCE($6, ignore_rules),
+			comments = COALESCE($7, comments),
+			updated = NOW()
+		WHERE id = ANY($8)
+	`
+
+	var typeVal, descriptionVal, syncIntervalVal, ignoreRulesVal, commentsVal interface{}
+	var parametersVal []byte
+	var enabledVal *bool
+
+	if params.Type != nil {
+		typeVal = *params.Type
+	}
+	if params.Enabled != nil {
+		enabledVal = params.Enabled
+	}
+	if params.Description != nil {
+		descriptionVal = *params.Description
+	}
+	if params.SyncInterval != nil {
+		syncIntervalVal = *params.SyncInterval
+	}
+	if params.Parameters != nil {
+		parametersVal = *params.Parameters
+	}
+	if params.IgnoreRules != nil {
+		ignoreRulesVal = *params.IgnoreRules
+	}
+	if params.Comments != nil {
+		commentsVal = *params.Comments
+	}
+
+	_, err := r.db.ExecContext(ctx, query,
+		typeVal,
+		enabledVal,
+		descriptionVal,
+		syncIntervalVal,
+		parametersVal,
+		ignoreRulesVal,
+		commentsVal,
+		pq.Array(ids),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to bulk update data sources: %w", err)
+	}
+
+	return nil
 }
 
 // List возвращает список источников данных с фильтрацией

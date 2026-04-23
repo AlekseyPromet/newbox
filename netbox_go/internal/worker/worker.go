@@ -16,10 +16,10 @@ type JobHandler func(ctx context.Context, job *entity.Job) error
 
 // Worker handles the execution of background jobs using a DB-backed queue
 type Worker struct {
-	ctx        context.Context
-	cancel     context.CancelFunc
-	jobRepo    repository.JobRepository
-	handlers   map[string]JobHandler
+	ctx          context.Context
+	cancel       context.CancelFunc
+	jobRepo      repository.JobRepository
+	handlers     map[string]JobHandler
 	pollInterval time.Duration
 }
 
@@ -43,7 +43,7 @@ func (w *Worker) RegisterHandler(objectType string, handler JobHandler) {
 // Start begins polling for and executing jobs
 func (w *Worker) Start() {
 	log.Println("Starting NetBox Go background worker pool...")
-	
+
 	// Start a few worker goroutines
 	for i := 0; i < 5; i++ {
 		go w.work()
@@ -71,7 +71,7 @@ func (w *Worker) processNextJob() {
 	}
 
 	job := jobs[0]
-	
+
 	// Update status to STARTED
 	err = w.jobRepo.UpdateStatus(w.ctx, job.ID, types.Status("started"), nil, nil)
 	if err != nil {
@@ -80,24 +80,25 @@ func (w *Worker) processNextJob() {
 	}
 
 	log.Printf("Executing job %d (%s) for object %s", job.ID, job.Name, job.ObjectType)
-	
+
+	now := time.Now()
+
 	handler, ok := w.handlers[job.ObjectType]
 	if !ok {
 		errMsg := fmt.Sprintf("no handler registered for object type: %s", job.ObjectType)
-		w.jobRepo.UpdateStatus(w.ctx, job.ID, types.Status("errored"), &errMsg, time.Now())
+		w.jobRepo.UpdateStatus(w.ctx, job.ID, types.Status("errored"), &errMsg, &now)
 		log.Printf("Job %d errored: %s", job.ID, errMsg)
 		return
 	}
 
 	if err := handler(w.ctx, job); err != nil {
 		errMsg := err.Error()
-		w.jobRepo.UpdateStatus(w.ctx, job.ID, types.Status("failed"), &errMsg, time.Now())
+		w.jobRepo.UpdateStatus(w.ctx, job.ID, types.Status("failed"), &errMsg, &now)
 		log.Printf("Job %d failed: %v", job.ID, err)
 		return
 	}
 
 	// Mark as completed
-	now := time.Now()
 	w.jobRepo.UpdateStatus(w.ctx, job.ID, types.Status("completed"), nil, &now)
 	log.Printf("Job %d completed successfully", job.ID)
 }
