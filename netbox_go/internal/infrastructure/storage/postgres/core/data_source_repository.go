@@ -10,6 +10,8 @@ import (
 	"netbox_go/internal/domain/core/repository"
 	coredb "netbox_go/internal/infrastructure/storage/sqlc/core"
 	"netbox_go/pkg/types"
+
+	"github.com/sqlc-dev/pqtype"
 )
 
 // DataSourcePostgresRepository реализует DataSourceRepository для PostgreSQL
@@ -24,7 +26,7 @@ func NewDataSourcePostgresRepository(db *sql.DB) repository.DataSourceRepository
 
 // GetByID возвращает источник данных по ID
 func (r *DataSourcePostgresRepository) GetByID(ctx context.Context, id types.ID) (*entity.DataSource, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	row, err := q.GetDataSourceByID(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -34,8 +36,8 @@ func (r *DataSourcePostgresRepository) GetByID(ctx context.Context, id types.ID)
 	}
 
 	var ignoreRules []string
-	if row.IgnoreRules != nil && len(row.IgnoreRules) > 0 {
-		if err := types.UnmarshalJSON(row.IgnoreRules, &ignoreRules); err != nil {
+	if row.IgnoreRules.Valid && len(row.IgnoreRules.RawMessage) > 0 {
+		if err := types.UnmarshalJSON(row.IgnoreRules.RawMessage, &ignoreRules); err != nil {
 			ignoreRules = []string{}
 		}
 	} else {
@@ -51,12 +53,12 @@ func (r *DataSourcePostgresRepository) GetByID(ctx context.Context, id types.ID)
 		ID:           row.ID,
 		Name:         row.Name,
 		Type:         row.Type,
-		SourceURL:    row.SourceURL,
+		SourceURL:    row.SourceUrl,
 		Status:       types.Status(row.Status),
 		Enabled:      row.Enabled,
 		SyncInterval: int(row.SyncInterval),
 		IgnoreRules:  ignoreRules,
-		Parameters:   row.Parameters,
+		Parameters:   row.Parameters.RawMessage,
 		LastSynced:   lastSynced,
 		Created:      row.Created,
 		Updated:      row.Updated,
@@ -65,7 +67,7 @@ func (r *DataSourcePostgresRepository) GetByID(ctx context.Context, id types.ID)
 
 // GetByName возвращает источник данных по имени
 func (r *DataSourcePostgresRepository) GetByName(ctx context.Context, name string) (*entity.DataSource, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	row, err := q.GetDataSourceByName(ctx, name)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -75,8 +77,8 @@ func (r *DataSourcePostgresRepository) GetByName(ctx context.Context, name strin
 	}
 
 	var ignoreRules []string
-	if row.IgnoreRules != nil && len(row.IgnoreRules) > 0 {
-		if err := types.UnmarshalJSON(row.IgnoreRules, &ignoreRules); err != nil {
+	if row.IgnoreRules.Valid && len(row.IgnoreRules.RawMessage) > 0 {
+		if err := types.UnmarshalJSON(row.IgnoreRules.RawMessage, &ignoreRules); err != nil {
 			ignoreRules = []string{}
 		}
 	} else {
@@ -92,12 +94,12 @@ func (r *DataSourcePostgresRepository) GetByName(ctx context.Context, name strin
 		ID:           row.ID,
 		Name:         row.Name,
 		Type:         row.Type,
-		SourceURL:    row.SourceURL,
+		SourceURL:    row.SourceUrl,
 		Status:       types.Status(row.Status),
 		Enabled:      row.Enabled,
 		SyncInterval: int(row.SyncInterval),
 		IgnoreRules:  ignoreRules,
-		Parameters:   row.Parameters,
+		Parameters:   row.Parameters.RawMessage,
 		LastSynced:   lastSynced,
 		Created:      row.Created,
 		Updated:      row.Updated,
@@ -211,7 +213,7 @@ func appendArg(args *[]interface{}, val interface{}) string {
 
 // Create создаёт новый источник данных
 func (r *DataSourcePostgresRepository) Create(ctx context.Context, ds *entity.DataSource) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 
 	ignoreRules, err := types.MarshalJSON(ds.IgnoreRules)
 	if err != nil {
@@ -232,15 +234,21 @@ func (r *DataSourcePostgresRepository) Create(ctx context.Context, ds *entity.Da
 	row, err := q.CreateDataSource(ctx, coredb.CreateDataSourceParams{
 		Name:         ds.Name,
 		Type:         ds.Type,
-		SourceURL:    ds.SourceURL,
+		SourceUrl:    ds.SourceURL,
 		Status:       string(ds.Status),
 		Enabled:      ds.Enabled,
 		SyncInterval: int32(ds.SyncInterval),
-		IgnoreRules:  ignoreRules,
-		Parameters:   parameters,
-		LastSynced:   lastSynced,
-		Created:      now,
-		Updated:      now,
+		IgnoreRules: pqtype.NullRawMessage{
+			RawMessage: ignoreRules,
+			Valid:      true,
+		},
+		Parameters: pqtype.NullRawMessage{
+			RawMessage: parameters,
+			Valid:      true,
+		},
+		LastSynced: lastSynced,
+		Created:    now,
+		Updated:    now,
 	})
 	if err != nil {
 		return err
@@ -254,7 +262,7 @@ func (r *DataSourcePostgresRepository) Create(ctx context.Context, ds *entity.Da
 
 // Update обновляет источник данных
 func (r *DataSourcePostgresRepository) Update(ctx context.Context, ds *entity.DataSource) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 
 	ignoreRules, err := types.MarshalJSON(ds.IgnoreRules)
 	if err != nil {
@@ -275,44 +283,51 @@ func (r *DataSourcePostgresRepository) Update(ctx context.Context, ds *entity.Da
 		ID:           ds.ID,
 		Name:         ds.Name,
 		Type:         ds.Type,
-		SourceURL:    ds.SourceURL,
+		SourceUrl:    ds.SourceURL,
 		Status:       string(ds.Status),
 		Enabled:      ds.Enabled,
 		SyncInterval: int32(ds.SyncInterval),
-		IgnoreRules:  ignoreRules,
-		Parameters:   parameters,
-		LastSynced:   lastSynced,
-		Updated:      time.Now(),
+		IgnoreRules: pqtype.NullRawMessage{
+			RawMessage: ignoreRules,
+			Valid:      true,
+		},
+		Parameters: pqtype.NullRawMessage{
+			RawMessage: parameters,
+			Valid:      true,
+		},
+		LastSynced: lastSynced,
+		Updated:    time.Now(),
 	})
 	return err
 }
 
 // Delete удаляет источник данных
 func (r *DataSourcePostgresRepository) Delete(ctx context.Context, id types.ID) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	_, err := q.DeleteDataSource(ctx, id)
 	return err
 }
 
 // UpdateStatus обновляет статус источника
 func (r *DataSourcePostgresRepository) UpdateStatus(ctx context.Context, id types.ID, status types.Status, lastSynced *time.Time) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 
 	var lastSyncedNull sql.NullTime
 	if lastSynced != nil {
 		lastSyncedNull = sql.NullTime{Time: *lastSynced, Valid: true}
 	}
 
-	return q.UpdateDataSourceStatus(ctx, coredb.UpdateDataSourceStatusParams{
+	_, err := q.UpdateDataSourceStatus(ctx, coredb.UpdateDataSourceStatusParams{
 		ID:         id,
 		Status:     string(status),
 		LastSynced: lastSyncedNull,
 	})
+	return err
 }
 
 // GetQueuedForSync возвращает источники, ожидающие синхронизации
 func (r *DataSourcePostgresRepository) GetQueuedForSync(ctx context.Context, limit int) ([]*entity.DataSource, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 
 	rows, err := q.GetQueuedDataSources(ctx, int32(limit))
 	if err != nil {
@@ -322,8 +337,8 @@ func (r *DataSourcePostgresRepository) GetQueuedForSync(ctx context.Context, lim
 	result := make([]*entity.DataSource, len(rows))
 	for i, row := range rows {
 		var ignoreRules []string
-		if row.IgnoreRules != nil && len(row.IgnoreRules) > 0 {
-			if err := types.UnmarshalJSON(row.IgnoreRules, &ignoreRules); err != nil {
+		if row.IgnoreRules.Valid && len(row.IgnoreRules.RawMessage) > 0 {
+			if err := types.UnmarshalJSON(row.IgnoreRules.RawMessage, &ignoreRules); err != nil {
 				ignoreRules = []string{}
 			}
 		} else {
@@ -339,12 +354,12 @@ func (r *DataSourcePostgresRepository) GetQueuedForSync(ctx context.Context, lim
 			ID:           row.ID,
 			Name:         row.Name,
 			Type:         row.Type,
-			SourceURL:    row.SourceURL,
+			SourceURL:    row.SourceUrl,
 			Status:       types.Status(row.Status),
 			Enabled:      row.Enabled,
 			SyncInterval: int(row.SyncInterval),
 			IgnoreRules:  ignoreRules,
-			Parameters:   row.Parameters,
+			Parameters:   row.Parameters.RawMessage,
 			LastSynced:   lastSynced,
 			Created:      row.Created,
 			Updated:      row.Updated,

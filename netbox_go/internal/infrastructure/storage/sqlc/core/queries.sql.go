@@ -11,9 +11,10 @@ import (
 	"encoding/json"
 	"time"
 
+	"netbox_go/pkg/types"
+
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
-	"netbox_go/pkg/types"
 )
 
 const archiveCompletedJobs = `-- name: ArchiveCompletedJobs :execrows
@@ -25,7 +26,7 @@ WHERE status IN ('completed', 'cancelled')
 `
 
 func (q *Queries) ArchiveCompletedJobs(ctx context.Context, completedAt sql.NullTime) (int64, error) {
-	result, err := q.db.ExecContext(ctx, archiveCompletedJobs, completedAt)
+	result, err := q.DB.ExecContext(ctx, archiveCompletedJobs, completedAt)
 	if err != nil {
 		return 0, err
 	}
@@ -58,7 +59,7 @@ type BulkCreateObjectChangesParams struct {
 }
 
 func (q *Queries) BulkCreateObjectChanges(ctx context.Context, arg BulkCreateObjectChangesParams) error {
-	_, err := q.db.ExecContext(ctx, bulkCreateObjectChanges,
+	_, err := q.DB.ExecContext(ctx, bulkCreateObjectChanges,
 		arg.Time,
 		arg.UserID,
 		arg.RequestID,
@@ -80,7 +81,7 @@ WHERE source_id = $1
 `
 
 func (q *Queries) BulkDeleteDataFilesBySource(ctx context.Context, sourceID types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, bulkDeleteDataFilesBySource, sourceID)
+	result, err := q.DB.ExecContext(ctx, bulkDeleteDataFilesBySource, sourceID)
 	if err != nil {
 		return 0, err
 	}
@@ -103,7 +104,7 @@ type BulkDeleteOldObjectChangesParams struct {
 }
 
 func (q *Queries) BulkDeleteOldObjectChanges(ctx context.Context, arg BulkDeleteOldObjectChangesParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, bulkDeleteOldObjectChanges, arg.Column1, arg.Offset)
+	result, err := q.DB.ExecContext(ctx, bulkDeleteOldObjectChanges, arg.Column1, arg.Offset)
 	if err != nil {
 		return 0, err
 	}
@@ -133,7 +134,7 @@ type BulkUpdateObjectTypesParams struct {
 // Bulk Operations
 // ============================================================================
 func (q *Queries) BulkUpdateObjectTypes(ctx context.Context, arg BulkUpdateObjectTypesParams) error {
-	_, err := q.db.ExecContext(ctx, bulkUpdateObjectTypes,
+	_, err := q.DB.ExecContext(ctx, bulkUpdateObjectTypes,
 		arg.AppLabel,
 		arg.Model,
 		arg.Public,
@@ -151,7 +152,7 @@ WHERE id = $1 AND status = 'scheduled'
 `
 
 func (q *Queries) CancelScheduledJob(ctx context.Context, id types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, cancelScheduledJob, id)
+	result, err := q.DB.ExecContext(ctx, cancelScheduledJob, id)
 	if err != nil {
 		return 0, err
 	}
@@ -165,7 +166,7 @@ WHERE status IN ('completed', 'failed', 'errored')
 `
 
 func (q *Queries) CleanupOldJobs(ctx context.Context, completedAt sql.NullTime) (int64, error) {
-	result, err := q.db.ExecContext(ctx, cleanupOldJobs, completedAt)
+	result, err := q.DB.ExecContext(ctx, cleanupOldJobs, completedAt)
 	if err != nil {
 		return 0, err
 	}
@@ -178,7 +179,7 @@ FROM core_configrevision
 `
 
 func (q *Queries) CountConfigRevisions(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, countConfigRevisions)
+	row := q.DB.QueryRowContext(ctx, countConfigRevisions)
 	var count int32
 	err := row.Scan(&count)
 	return count, err
@@ -191,7 +192,7 @@ WHERE source_id = $1
 `
 
 func (q *Queries) CountDataFilesBySource(ctx context.Context, sourceID types.ID) (int32, error) {
-	row := q.db.QueryRowContext(ctx, countDataFilesBySource, sourceID)
+	row := q.DB.QueryRowContext(ctx, countDataFilesBySource, sourceID)
 	var count int32
 	err := row.Scan(&count)
 	return count, err
@@ -203,7 +204,7 @@ FROM core_datafile
 `
 
 func (q *Queries) CountDataFilesTotal(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, countDataFilesTotal)
+	row := q.DB.QueryRowContext(ctx, countDataFilesTotal)
 	var count int32
 	err := row.Scan(&count)
 	return count, err
@@ -224,7 +225,7 @@ type CountDataSourcesParams struct {
 }
 
 func (q *Queries) CountDataSources(ctx context.Context, arg CountDataSourcesParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, countDataSources, arg.Column1, arg.Column2, arg.Column3)
+	row := q.DB.QueryRowContext(ctx, countDataSources, arg.Column1, arg.Column2, arg.Column3)
 	var count int32
 	err := row.Scan(&count)
 	return count, err
@@ -247,7 +248,7 @@ type CountJobsParams struct {
 }
 
 func (q *Queries) CountJobs(ctx context.Context, arg CountJobsParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, countJobs,
+	row := q.DB.QueryRowContext(ctx, countJobs,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -279,7 +280,7 @@ type CountObjectChangesParams struct {
 }
 
 func (q *Queries) CountObjectChanges(ctx context.Context, arg CountObjectChangesParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, countObjectChanges,
+	row := q.DB.QueryRowContext(ctx, countObjectChanges,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -307,7 +308,7 @@ type CountObjectTypesParams struct {
 }
 
 func (q *Queries) CountObjectTypes(ctx context.Context, arg CountObjectTypesParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, countObjectTypes, arg.Column1, arg.Column2, arg.Column3)
+	row := q.DB.QueryRowContext(ctx, countObjectTypes, arg.Column1, arg.Column2, arg.Column3)
 	var count int32
 	err := row.Scan(&count)
 	return count, err
@@ -327,7 +328,7 @@ type CreateConfigRevisionParams struct {
 }
 
 func (q *Queries) CreateConfigRevision(ctx context.Context, arg CreateConfigRevisionParams) (CoreConfigrevision, error) {
-	row := q.db.QueryRowContext(ctx, createConfigRevision,
+	row := q.DB.QueryRowContext(ctx, createConfigRevision,
 		arg.Created,
 		arg.Active,
 		arg.Comment,
@@ -361,7 +362,7 @@ type CreateDataFileParams struct {
 }
 
 func (q *Queries) CreateDataFile(ctx context.Context, arg CreateDataFileParams) (CoreDatafile, error) {
-	row := q.db.QueryRowContext(ctx, createDataFile,
+	row := q.DB.QueryRowContext(ctx, createDataFile,
 		arg.SourceID,
 		arg.Path,
 		arg.Size,
@@ -410,7 +411,7 @@ type CreateDataSourceParams struct {
 }
 
 func (q *Queries) CreateDataSource(ctx context.Context, arg CreateDataSourceParams) (CoreDatasource, error) {
-	row := q.db.QueryRowContext(ctx, createDataSource,
+	row := q.DB.QueryRowContext(ctx, createDataSource,
 		arg.Name,
 		arg.Type,
 		arg.SourceUrl,
@@ -470,7 +471,7 @@ type CreateJobParams struct {
 }
 
 func (q *Queries) CreateJob(ctx context.Context, arg CreateJobParams) (CoreJob, error) {
-	row := q.db.QueryRowContext(ctx, createJob,
+	row := q.DB.QueryRowContext(ctx, createJob,
 		arg.ObjectType,
 		arg.ObjectID,
 		arg.Name,
@@ -535,7 +536,7 @@ type CreateObjectChangeParams struct {
 }
 
 func (q *Queries) CreateObjectChange(ctx context.Context, arg CreateObjectChangeParams) (CoreObjectchange, error) {
-	row := q.db.QueryRowContext(ctx, createObjectChange,
+	row := q.DB.QueryRowContext(ctx, createObjectChange,
 		arg.Time,
 		arg.UserID,
 		arg.RequestID,
@@ -582,7 +583,7 @@ type CreateObjectTypeParams struct {
 }
 
 func (q *Queries) CreateObjectType(ctx context.Context, arg CreateObjectTypeParams) (DjangoContentType, error) {
-	row := q.db.QueryRowContext(ctx, createObjectType,
+	row := q.DB.QueryRowContext(ctx, createObjectType,
 		arg.AppLabel,
 		arg.Model,
 		arg.Public,
@@ -609,7 +610,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteConfigRevision(ctx context.Context, id types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteConfigRevision, id)
+	result, err := q.DB.ExecContext(ctx, deleteConfigRevision, id)
 	if err != nil {
 		return 0, err
 	}
@@ -622,7 +623,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteDataFile(ctx context.Context, id types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteDataFile, id)
+	result, err := q.DB.ExecContext(ctx, deleteDataFile, id)
 	if err != nil {
 		return 0, err
 	}
@@ -635,7 +636,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteDataSource(ctx context.Context, id types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteDataSource, id)
+	result, err := q.DB.ExecContext(ctx, deleteDataSource, id)
 	if err != nil {
 		return 0, err
 	}
@@ -648,7 +649,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteJob(ctx context.Context, id types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteJob, id)
+	result, err := q.DB.ExecContext(ctx, deleteJob, id)
 	if err != nil {
 		return 0, err
 	}
@@ -661,7 +662,7 @@ WHERE id = $1
 `
 
 func (q *Queries) DeleteObjectType(ctx context.Context, id types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteObjectType, id)
+	result, err := q.DB.ExecContext(ctx, deleteObjectType, id)
 	if err != nil {
 		return 0, err
 	}
@@ -674,7 +675,7 @@ WHERE time < $1
 `
 
 func (q *Queries) DeleteOldObjectChanges(ctx context.Context, argTime time.Time) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteOldObjectChanges, argTime)
+	result, err := q.DB.ExecContext(ctx, deleteOldObjectChanges, argTime)
 	if err != nil {
 		return 0, err
 	}
@@ -691,7 +692,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetActiveConfigRevision(ctx context.Context) (CoreConfigrevision, error) {
-	row := q.db.QueryRowContext(ctx, getActiveConfigRevision)
+	row := q.DB.QueryRowContext(ctx, getActiveConfigRevision)
 	var i CoreConfigrevision
 	err := row.Scan(
 		&i.ID,
@@ -715,7 +716,7 @@ WHERE id = $1
 // Описание: SQL запросы для работы с таблицами модуля Core NetBox
 // Версия: 1.0.0
 func (q *Queries) GetConfigRevisionByID(ctx context.Context, id types.ID) (CoreConfigrevision, error) {
-	row := q.db.QueryRowContext(ctx, getConfigRevisionByID, id)
+	row := q.DB.QueryRowContext(ctx, getConfigRevisionByID, id)
 	var i CoreConfigrevision
 	err := row.Scan(
 		&i.ID,
@@ -735,7 +736,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetDataFileByID(ctx context.Context, id types.ID) (CoreDatafile, error) {
-	row := q.db.QueryRowContext(ctx, getDataFileByID, id)
+	row := q.DB.QueryRowContext(ctx, getDataFileByID, id)
 	var i CoreDatafile
 	err := row.Scan(
 		&i.ID,
@@ -763,7 +764,7 @@ type GetDataFileBySourceAndPathParams struct {
 }
 
 func (q *Queries) GetDataFileBySourceAndPath(ctx context.Context, arg GetDataFileBySourceAndPathParams) (CoreDatafile, error) {
-	row := q.db.QueryRowContext(ctx, getDataFileBySourceAndPath, arg.SourceID, arg.Path)
+	row := q.DB.QueryRowContext(ctx, getDataFileBySourceAndPath, arg.SourceID, arg.Path)
 	var i CoreDatafile
 	err := row.Scan(
 		&i.ID,
@@ -793,7 +794,7 @@ type GetDataFilesSummaryRow struct {
 }
 
 func (q *Queries) GetDataFilesSummary(ctx context.Context) (GetDataFilesSummaryRow, error) {
-	row := q.db.QueryRowContext(ctx, getDataFilesSummary)
+	row := q.DB.QueryRowContext(ctx, getDataFilesSummary)
 	var i GetDataFilesSummaryRow
 	err := row.Scan(&i.TotalFiles, &i.TotalSize, &i.TotalSources)
 	return i, err
@@ -820,7 +821,7 @@ type GetDataFilesWithHashRow struct {
 }
 
 func (q *Queries) GetDataFilesWithHash(ctx context.Context, arg GetDataFilesWithHashParams) ([]GetDataFilesWithHashRow, error) {
-	rows, err := q.db.QueryContext(ctx, getDataFilesWithHash, arg.SourceID, arg.Hash)
+	rows, err := q.DB.QueryContext(ctx, getDataFilesWithHash, arg.SourceID, arg.Hash)
 	if err != nil {
 		return nil, err
 	}
@@ -857,7 +858,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetDataSourceByID(ctx context.Context, id types.ID) (CoreDatasource, error) {
-	row := q.db.QueryRowContext(ctx, getDataSourceByID, id)
+	row := q.DB.QueryRowContext(ctx, getDataSourceByID, id)
 	var i CoreDatasource
 	err := row.Scan(
 		&i.ID,
@@ -885,7 +886,7 @@ WHERE name = $1
 `
 
 func (q *Queries) GetDataSourceByName(ctx context.Context, name string) (CoreDatasource, error) {
-	row := q.db.QueryRowContext(ctx, getDataSourceByName, name)
+	row := q.DB.QueryRowContext(ctx, getDataSourceByName, name)
 	var i CoreDatasource
 	err := row.Scan(
 		&i.ID,
@@ -921,7 +922,7 @@ type GetDataSourcesByTypeParams struct {
 }
 
 func (q *Queries) GetDataSourcesByType(ctx context.Context, arg GetDataSourcesByTypeParams) ([]CoreDatasource, error) {
-	rows, err := q.db.QueryContext(ctx, getDataSourcesByType, arg.Type, arg.Limit, arg.Offset)
+	rows, err := q.DB.QueryContext(ctx, getDataSourcesByType, arg.Type, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -968,7 +969,7 @@ LIMIT $1
 `
 
 func (q *Queries) GetDataSourcesDueForSync(ctx context.Context, limit int32) ([]CoreDatasource, error) {
-	rows, err := q.db.QueryContext(ctx, getDataSourcesDueForSync, limit)
+	rows, err := q.DB.QueryContext(ctx, getDataSourcesDueForSync, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -1017,7 +1018,7 @@ ORDER BY name
 // Additional DataSource Queries
 // ============================================================================
 func (q *Queries) GetEnabledDataSources(ctx context.Context) ([]CoreDatasource, error) {
-	rows, err := q.db.QueryContext(ctx, getEnabledDataSources)
+	rows, err := q.DB.QueryContext(ctx, getEnabledDataSources)
 	if err != nil {
 		return nil, err
 	}
@@ -1068,7 +1069,7 @@ type GetJSONFieldParams struct {
 // JSON Helper Functions
 // ============================================================================
 func (q *Queries) GetJSONField(ctx context.Context, arg GetJSONFieldParams) (interface{}, error) {
-	row := q.db.QueryRowContext(ctx, getJSONField, arg.ID, arg.Data)
+	row := q.DB.QueryRowContext(ctx, getJSONField, arg.ID, arg.Data)
 	var value interface{}
 	err := row.Scan(&value)
 	return value, err
@@ -1086,7 +1087,7 @@ type GetJSONPathParams struct {
 }
 
 func (q *Queries) GetJSONPath(ctx context.Context, arg GetJSONPathParams) ([]json.RawMessage, error) {
-	rows, err := q.db.QueryContext(ctx, getJSONPath, arg.ID, arg.Column2)
+	rows, err := q.DB.QueryContext(ctx, getJSONPath, arg.ID, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
@@ -1117,7 +1118,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetJobByID(ctx context.Context, id types.ID) (CoreJob, error) {
-	row := q.db.QueryRowContext(ctx, getJobByID, id)
+	row := q.DB.QueryRowContext(ctx, getJobByID, id)
 	var i CoreJob
 	err := row.Scan(
 		&i.ID,
@@ -1158,7 +1159,7 @@ type GetJobStatisticsRow struct {
 }
 
 func (q *Queries) GetJobStatistics(ctx context.Context) (GetJobStatisticsRow, error) {
-	row := q.db.QueryRowContext(ctx, getJobStatistics)
+	row := q.DB.QueryRowContext(ctx, getJobStatistics)
 	var i GetJobStatisticsRow
 	err := row.Scan(
 		&i.PendingCount,
@@ -1191,7 +1192,7 @@ type GetJobsByObjectTypeAndIDParams struct {
 // Additional Job Queries
 // ============================================================================
 func (q *Queries) GetJobsByObjectTypeAndID(ctx context.Context, arg GetJobsByObjectTypeAndIDParams) ([]CoreJob, error) {
-	rows, err := q.db.QueryContext(ctx, getJobsByObjectTypeAndID, arg.ObjectType, arg.ObjectID, arg.Limit)
+	rows, err := q.DB.QueryContext(ctx, getJobsByObjectTypeAndID, arg.ObjectType, arg.ObjectID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -1239,7 +1240,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetObjectChangeByID(ctx context.Context, id types.ID) (CoreObjectchange, error) {
-	row := q.db.QueryRowContext(ctx, getObjectChangeByID, id)
+	row := q.DB.QueryRowContext(ctx, getObjectChangeByID, id)
 	var i CoreObjectchange
 	err := row.Scan(
 		&i.ID,
@@ -1277,7 +1278,7 @@ type GetObjectChangeCountByActionRow struct {
 }
 
 func (q *Queries) GetObjectChangeCountByAction(ctx context.Context, arg GetObjectChangeCountByActionParams) (GetObjectChangeCountByActionRow, error) {
-	row := q.db.QueryRowContext(ctx, getObjectChangeCountByAction, arg.Column1, arg.Column2)
+	row := q.DB.QueryRowContext(ctx, getObjectChangeCountByAction, arg.Column1, arg.Column2)
 	var i GetObjectChangeCountByActionRow
 	err := row.Scan(&i.Action, &i.Count)
 	return i, err
@@ -1305,7 +1306,7 @@ type GetObjectChangesByObjectTypeParams struct {
 // Additional ObjectChange Queries
 // ============================================================================
 func (q *Queries) GetObjectChangesByObjectType(ctx context.Context, arg GetObjectChangesByObjectTypeParams) ([]CoreObjectchange, error) {
-	rows, err := q.db.QueryContext(ctx, getObjectChangesByObjectType, arg.ChangedObjectType, arg.Limit, arg.Offset)
+	rows, err := q.DB.QueryContext(ctx, getObjectChangesByObjectType, arg.ChangedObjectType, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -1353,7 +1354,7 @@ type GetObjectTypeByAppAndModelParams struct {
 }
 
 func (q *Queries) GetObjectTypeByAppAndModel(ctx context.Context, arg GetObjectTypeByAppAndModelParams) (DjangoContentType, error) {
-	row := q.db.QueryRowContext(ctx, getObjectTypeByAppAndModel, arg.AppLabel, arg.Model)
+	row := q.DB.QueryRowContext(ctx, getObjectTypeByAppAndModel, arg.AppLabel, arg.Model)
 	var i DjangoContentType
 	err := row.Scan(
 		&i.ID,
@@ -1375,7 +1376,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetObjectTypeByID(ctx context.Context, id types.ID) (DjangoContentType, error) {
-	row := q.db.QueryRowContext(ctx, getObjectTypeByID, id)
+	row := q.DB.QueryRowContext(ctx, getObjectTypeByID, id)
 	var i DjangoContentType
 	err := row.Scan(
 		&i.ID,
@@ -1400,7 +1401,7 @@ LIMIT $1
 `
 
 func (q *Queries) GetQueuedDataSources(ctx context.Context, limit int32) ([]CoreDatasource, error) {
-	rows, err := q.db.QueryContext(ctx, getQueuedDataSources, limit)
+	rows, err := q.DB.QueryContext(ctx, getQueuedDataSources, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -1453,7 +1454,7 @@ type GetRecentObjectChangesParams struct {
 }
 
 func (q *Queries) GetRecentObjectChanges(ctx context.Context, arg GetRecentObjectChangesParams) ([]CoreObjectchange, error) {
-	rows, err := q.db.QueryContext(ctx, getRecentObjectChanges, arg.ChangedObjectID, arg.ChangedObjectType, arg.Limit)
+	rows, err := q.DB.QueryContext(ctx, getRecentObjectChanges, arg.ChangedObjectID, arg.ChangedObjectType, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -1498,7 +1499,7 @@ ORDER BY started_at ASC
 `
 
 func (q *Queries) GetRunningJobs(ctx context.Context) ([]CoreJob, error) {
-	rows, err := q.db.QueryContext(ctx, getRunningJobs)
+	rows, err := q.DB.QueryContext(ctx, getRunningJobs)
 	if err != nil {
 		return nil, err
 	}
@@ -1552,7 +1553,7 @@ type GetScheduledJobsParams struct {
 }
 
 func (q *Queries) GetScheduledJobs(ctx context.Context, arg GetScheduledJobsParams) ([]CoreJob, error) {
-	rows, err := q.db.QueryContext(ctx, getScheduledJobs, arg.ScheduledAt, arg.Limit)
+	rows, err := q.DB.QueryContext(ctx, getScheduledJobs, arg.ScheduledAt, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -1604,7 +1605,7 @@ type ListConfigRevisionsParams struct {
 }
 
 func (q *Queries) ListConfigRevisions(ctx context.Context, arg ListConfigRevisionsParams) ([]CoreConfigrevision, error) {
-	rows, err := q.db.QueryContext(ctx, listConfigRevisions, arg.Limit, arg.Offset)
+	rows, err := q.DB.QueryContext(ctx, listConfigRevisions, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -1648,7 +1649,7 @@ type ListDataFilesBySourceParams struct {
 }
 
 func (q *Queries) ListDataFilesBySource(ctx context.Context, arg ListDataFilesBySourceParams) ([]CoreDatafile, error) {
-	rows, err := q.db.QueryContext(ctx, listDataFilesBySource, arg.SourceID, arg.Limit, arg.Offset)
+	rows, err := q.DB.QueryContext(ctx, listDataFilesBySource, arg.SourceID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -1700,7 +1701,7 @@ type ListDataSourcesParams struct {
 }
 
 func (q *Queries) ListDataSources(ctx context.Context, arg ListDataSourcesParams) ([]CoreDatasource, error) {
-	rows, err := q.db.QueryContext(ctx, listDataSources,
+	rows, err := q.DB.QueryContext(ctx, listDataSources,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -1764,7 +1765,7 @@ type ListJobsParams struct {
 }
 
 func (q *Queries) ListJobs(ctx context.Context, arg ListJobsParams) ([]CoreJob, error) {
-	rows, err := q.db.QueryContext(ctx, listJobs,
+	rows, err := q.DB.QueryContext(ctx, listJobs,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -1837,7 +1838,7 @@ type ListObjectChangesParams struct {
 }
 
 func (q *Queries) ListObjectChanges(ctx context.Context, arg ListObjectChangesParams) ([]CoreObjectchange, error) {
-	rows, err := q.db.QueryContext(ctx, listObjectChanges,
+	rows, err := q.DB.QueryContext(ctx, listObjectChanges,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -1901,7 +1902,7 @@ type ListObjectTypesParams struct {
 }
 
 func (q *Queries) ListObjectTypes(ctx context.Context, arg ListObjectTypesParams) ([]DjangoContentType, error) {
-	rows, err := q.db.QueryContext(ctx, listObjectTypes,
+	rows, err := q.DB.QueryContext(ctx, listObjectTypes,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -1949,7 +1950,7 @@ type MergeJSONDataParams struct {
 }
 
 func (q *Queries) MergeJSONData(ctx context.Context, arg MergeJSONDataParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, mergeJSONData, arg.ID, arg.Column2)
+	result, err := q.DB.ExecContext(ctx, mergeJSONData, arg.ID, arg.Column2)
 	if err != nil {
 		return 0, err
 	}
@@ -1963,7 +1964,7 @@ WHERE id = $1 AND status IN ('failed', 'errored')
 `
 
 func (q *Queries) RetryFailedJob(ctx context.Context, id types.ID) (int64, error) {
-	result, err := q.db.ExecContext(ctx, retryFailedJob, id)
+	result, err := q.DB.ExecContext(ctx, retryFailedJob, id)
 	if err != nil {
 		return 0, err
 	}
@@ -1991,7 +1992,7 @@ type SearchDataFilesByPathPatternParams struct {
 // Additional DataFile Queries
 // ============================================================================
 func (q *Queries) SearchDataFilesByPathPattern(ctx context.Context, arg SearchDataFilesByPathPatternParams) ([]CoreDatafile, error) {
-	rows, err := q.db.QueryContext(ctx, searchDataFilesByPathPattern,
+	rows, err := q.DB.QueryContext(ctx, searchDataFilesByPathPattern,
 		arg.SourceID,
 		arg.Path,
 		arg.Limit,
@@ -2030,11 +2031,11 @@ func (q *Queries) SearchDataFilesByPathPattern(ctx context.Context, arg SearchDa
 const setActiveConfigRevision = `-- name: SetActiveConfigRevision :execrows
 UPDATE core_configrevision
 SET active = FALSE
-WHERE active = TRUE
+WHERE active = TRUE AND ID = $1
 `
 
-func (q *Queries) SetActiveConfigRevision(ctx context.Context) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setActiveConfigRevision)
+func (q *Queries) SetActiveConfigRevision(ctx context.Context, id types.ID) (int64, error) {
+	result, err := q.DB.ExecContext(ctx, setActiveConfigRevision, id)
 	if err != nil {
 		return 0, err
 	}
@@ -2055,7 +2056,7 @@ type UpdateConfigRevisionParams struct {
 }
 
 func (q *Queries) UpdateConfigRevision(ctx context.Context, arg UpdateConfigRevisionParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateConfigRevision,
+	result, err := q.DB.ExecContext(ctx, updateConfigRevision,
 		arg.ID,
 		arg.Active,
 		arg.Comment,
@@ -2083,7 +2084,7 @@ type UpdateDataFileParams struct {
 }
 
 func (q *Queries) UpdateDataFile(ctx context.Context, arg UpdateDataFileParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateDataFile,
+	result, err := q.DB.ExecContext(ctx, updateDataFile,
 		arg.ID,
 		arg.Path,
 		arg.Size,
@@ -2120,7 +2121,7 @@ type UpdateDataSourceParams struct {
 }
 
 func (q *Queries) UpdateDataSource(ctx context.Context, arg UpdateDataSourceParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateDataSource,
+	result, err := q.DB.ExecContext(ctx, updateDataSource,
 		arg.ID,
 		arg.Name,
 		arg.Type,
@@ -2151,7 +2152,7 @@ type UpdateDataSourceLastSyncedParams struct {
 }
 
 func (q *Queries) UpdateDataSourceLastSynced(ctx context.Context, arg UpdateDataSourceLastSyncedParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateDataSourceLastSynced, arg.ID, arg.LastSynced)
+	result, err := q.DB.ExecContext(ctx, updateDataSourceLastSynced, arg.ID, arg.LastSynced)
 	if err != nil {
 		return 0, err
 	}
@@ -2171,7 +2172,7 @@ type UpdateDataSourceStatusParams struct {
 }
 
 func (q *Queries) UpdateDataSourceStatus(ctx context.Context, arg UpdateDataSourceStatusParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateDataSourceStatus, arg.ID, arg.Status, arg.LastSynced)
+	result, err := q.DB.ExecContext(ctx, updateDataSourceStatus, arg.ID, arg.Status, arg.LastSynced)
 	if err != nil {
 		return 0, err
 	}
@@ -2191,7 +2192,7 @@ type UpdateJSONFieldParams struct {
 }
 
 func (q *Queries) UpdateJSONField(ctx context.Context, arg UpdateJSONFieldParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateJSONField, arg.ID, arg.Path, arg.ToJsonb)
+	result, err := q.DB.ExecContext(ctx, updateJSONField, arg.ID, arg.Path, arg.ToJsonb)
 	if err != nil {
 		return 0, err
 	}
@@ -2224,7 +2225,7 @@ type UpdateJobParams struct {
 }
 
 func (q *Queries) UpdateJob(ctx context.Context, arg UpdateJobParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateJob,
+	result, err := q.DB.ExecContext(ctx, updateJob,
 		arg.ID,
 		arg.ObjectType,
 		arg.ObjectID,
@@ -2260,7 +2261,7 @@ type UpdateJobStatusParams struct {
 }
 
 func (q *Queries) UpdateJobStatus(ctx context.Context, arg UpdateJobStatusParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateJobStatus,
+	result, err := q.DB.ExecContext(ctx, updateJobStatus,
 		arg.ID,
 		arg.Status,
 		arg.Error,
@@ -2288,7 +2289,7 @@ type UpdateObjectTypeParams struct {
 }
 
 func (q *Queries) UpdateObjectType(ctx context.Context, arg UpdateObjectTypeParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateObjectType,
+	result, err := q.DB.ExecContext(ctx, updateObjectType,
 		arg.ID,
 		arg.AppLabel,
 		arg.Model,

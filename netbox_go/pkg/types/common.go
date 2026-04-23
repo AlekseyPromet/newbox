@@ -2,6 +2,7 @@
 package types
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -10,27 +11,27 @@ import (
 
 // Ошибки валидации и бизнес-логики
 var (
-	ErrInvalidID          = errors.New("invalid ID")
-	ErrInvalidStatus      = errors.New("invalid status")
-	ErrInvalidSlug        = errors.New("invalid slug")
-	ErrInvalidLatitude    = errors.New("invalid latitude: must be between -90 and 90")
-	ErrInvalidLongitude   = errors.New("invalid longitude: must be between -180 and 180")
-	ErrNameRequired       = errors.New("name is required")
-	ErrDeviceNameRequired = errors.New("device name is required")
-	ErrDeviceModelRequired = errors.New("device model is required")
-	ErrManufacturerRequired = errors.New("manufacturer is required")
-	ErrPlatformNameRequired = errors.New("platform name is required")
+	ErrInvalidID              = errors.New("invalid ID")
+	ErrInvalidStatus          = errors.New("invalid status")
+	ErrInvalidSlug            = errors.New("invalid slug")
+	ErrInvalidLatitude        = errors.New("invalid latitude: must be between -90 and 90")
+	ErrInvalidLongitude       = errors.New("invalid longitude: must be between -180 and 180")
+	ErrNameRequired           = errors.New("name is required")
+	ErrDeviceNameRequired     = errors.New("device name is required")
+	ErrDeviceModelRequired    = errors.New("device model is required")
+	ErrManufacturerRequired   = errors.New("manufacturer is required")
+	ErrPlatformNameRequired   = errors.New("platform name is required")
 	ErrDeviceRoleNameRequired = errors.New("device role name is required")
-	ErrColorRequired      = errors.New("color is required")
-	ErrInvalidUHeight     = errors.New("invalid u_height: must be non-negative")
-	ErrDeviceTypeRequired = errors.New("device type is required")
-	ErrDeviceRoleRequired = errors.New("device role is required")
-	ErrSiteRequired       = errors.New("site is required")
-	ErrInvalidRackPosition = errors.New("invalid rack position")
-	ErrModuleModelRequired = errors.New("module model is required")
-	ErrModuleBayRequired  = errors.New("module bay is required")
-	ErrModuleTypeRequired = errors.New("module type is required")
-	ErrDeviceRequired     = errors.New("device is required")
+	ErrColorRequired          = errors.New("color is required")
+	ErrInvalidUHeight         = errors.New("invalid u_height: must be non-negative")
+	ErrDeviceTypeRequired     = errors.New("device type is required")
+	ErrDeviceRoleRequired     = errors.New("device role is required")
+	ErrSiteRequired           = errors.New("site is required")
+	ErrInvalidRackPosition    = errors.New("invalid rack position")
+	ErrModuleModelRequired    = errors.New("module model is required")
+	ErrModuleBayRequired      = errors.New("module bay is required")
+	ErrModuleTypeRequired     = errors.New("module type is required")
+	ErrDeviceRequired         = errors.New("device is required")
 )
 
 // ID представляет идентификатор сущности
@@ -39,6 +40,10 @@ type ID uuid.UUID
 // NewID генерирует новый UUID
 func NewID() ID {
 	return ID(uuid.New())
+}
+
+func (id ID) IsNuul() bool {
+	return id.String() != ""
 }
 
 // ParseID парсит строку в ID
@@ -221,4 +226,12 @@ func splitArray(s string) []string {
 	}
 	result = append(result, current)
 	return result
+}
+
+func UnmarshalJSON(data []byte, v any) error {
+	return json.Unmarshal(data, v)
+}
+
+func MarshalJSON(v any) (data []byte, e error) {
+	return json.Marshal(v)
 }

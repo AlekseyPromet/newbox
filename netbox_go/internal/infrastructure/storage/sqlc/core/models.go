@@ -9,9 +9,10 @@ import (
 	"encoding/json"
 	"time"
 
+	"netbox_go/pkg/types"
+
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
-	"netbox_go/pkg/types"
 )
 
 // Ревизии конфигурации NetBox
@@ -141,4 +142,8 @@ type DjangoContentType struct {
 	Features pqtype.NullRawMessage `json:"features"`
 	Created  time.Time             `json:"created"`
 	Updated  time.Time             `json:"updated"`
+}
+
+type Queries struct {
+	DB *sql.DB
 }

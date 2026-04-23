@@ -10,6 +10,8 @@ import (
 	"netbox_go/internal/domain/core/repository"
 	coredb "netbox_go/internal/infrastructure/storage/sqlc/core"
 	"netbox_go/pkg/types"
+
+	"github.com/sqlc-dev/pqtype"
 )
 
 // ObjectTypePostgresRepository реализует ObjectTypeRepository для PostgreSQL
@@ -24,7 +26,7 @@ func NewObjectTypePostgresRepository(db *sql.DB) repository.ObjectTypeRepository
 
 // GetByID возвращает тип объекта по ID
 func (r *ObjectTypePostgresRepository) GetByID(ctx context.Context, id types.ID) (*entity.ObjectType, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	row, err := q.GetObjectTypeByID(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -34,8 +36,8 @@ func (r *ObjectTypePostgresRepository) GetByID(ctx context.Context, id types.ID)
 	}
 
 	var features []string
-	if row.Features != nil && len(row.Features) > 0 {
-		if err := types.UnmarshalJSON(row.Features, &features); err != nil {
+	if row.Features.Valid && len(row.Features.RawMessage) > 0 {
+		if err := types.UnmarshalJSON(row.Features.RawMessage, &features); err != nil {
 			features = []string{}
 		}
 	} else {
@@ -55,8 +57,11 @@ func (r *ObjectTypePostgresRepository) GetByID(ctx context.Context, id types.ID)
 
 // GetByAppAndModel возвращает тип объекта по app_label и model
 func (r *ObjectTypePostgresRepository) GetByAppAndModel(ctx context.Context, appLabel, model string) (*entity.ObjectType, error) {
-	q := coredb.New(r.db)
-	row, err := q.GetObjectTypeByAppAndModel(ctx, appLabel, model)
+	q := coredb.Queries{DB: r.db}
+	row, err := q.GetObjectTypeByAppAndModel(ctx, coredb.GetObjectTypeByAppAndModelParams{
+		AppLabel: appLabel,
+		Model:    model,
+	})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, types.ErrNotFound
@@ -65,8 +70,8 @@ func (r *ObjectTypePostgresRepository) GetByAppAndModel(ctx context.Context, app
 	}
 
 	var features []string
-	if row.Features != nil && len(row.Features) > 0 {
-		if err := types.UnmarshalJSON(row.Features, &features); err != nil {
+	if row.Features.Valid && len(row.Features.RawMessage) > 0 {
+		if err := types.UnmarshalJSON(row.Features.RawMessage, &features); err != nil {
 			features = []string{}
 		}
 	} else {
@@ -174,7 +179,7 @@ func (r *ObjectTypePostgresRepository) List(ctx context.Context, filter reposito
 
 // Create создаёт новый тип объекта
 func (r *ObjectTypePostgresRepository) Create(ctx context.Context, ot *entity.ObjectType) error {
-	q := coredb.New(r.db)
+	q := &coredb.Queries{DB: r.db}
 
 	features, err := types.MarshalJSON(ot.Features)
 	if err != nil {
@@ -186,9 +191,12 @@ func (r *ObjectTypePostgresRepository) Create(ctx context.Context, ot *entity.Ob
 		AppLabel: ot.AppLabel,
 		Model:    ot.Model,
 		Public:   ot.Public,
-		Features: features,
-		Created:  now,
-		Updated:  now,
+		Features: pqtype.NullRawMessage{
+			RawMessage: features,
+			Valid:      true,
+		},
+		Created: now,
+		Updated: now,
 	})
 	if err != nil {
 		return err
@@ -202,7 +210,7 @@ func (r *ObjectTypePostgresRepository) Create(ctx context.Context, ot *entity.Ob
 
 // Update обновляет тип объекта
 func (r *ObjectTypePostgresRepository) Update(ctx context.Context, ot *entity.ObjectType) error {
-	q := coredb.New(r.db)
+	q := &coredb.Queries{DB: r.db}
 
 	features, err := types.MarshalJSON(ot.Features)
 	if err != nil {
@@ -214,15 +222,18 @@ func (r *ObjectTypePostgresRepository) Update(ctx context.Context, ot *entity.Ob
 		AppLabel: ot.AppLabel,
 		Model:    ot.Model,
 		Public:   ot.Public,
-		Features: features,
-		Updated:  time.Now(),
+		Features: pqtype.NullRawMessage{
+			RawMessage: features,
+			Valid:      true,
+		},
+		Updated: time.Now(),
 	})
 	return err
 }
 
 // Delete удаляет тип объекта
 func (r *ObjectTypePostgresRepository) Delete(ctx context.Context, id types.ID) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	_, err := q.DeleteObjectType(ctx, id)
 	return err
 }

@@ -473,12 +473,12 @@ func (h *CoreHandlers) CreateJob(c echo.Context) error {
 	}
 
 	job := &entity.Job{
-		ObjectType:  req.ObjectType,
-		ObjectID:    req.ObjectID,
+		ObjectType:  *req.ObjectType,
+		ObjectID:    *req.ObjectID,
 		Status:      req.Status,
 		QueueName:   req.QueueName,
-		ScheduledAt: req.ScheduledAt,
-		UserID:      req.UserID,
+		ScheduledAt: *req.ScheduledAt,
+		UserID:      *req.UserID,
 		Object:      req.Object,
 	}
 

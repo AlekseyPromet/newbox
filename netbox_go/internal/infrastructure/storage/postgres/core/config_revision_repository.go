@@ -4,6 +4,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"netbox_go/internal/domain/core/entity"
@@ -24,7 +25,7 @@ func NewConfigRevisionPostgresRepository(db *sql.DB) repository.ConfigRevisionRe
 
 // GetByID возвращает ревизию по ID
 func (r *ConfigRevisionPostgresRepository) GetByID(ctx context.Context, id types.ID) (*entity.ConfigRevision, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	row, err := q.GetConfigRevisionByID(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -44,7 +45,7 @@ func (r *ConfigRevisionPostgresRepository) GetByID(ctx context.Context, id types
 
 // GetActive возвращает активную ревизию
 func (r *ConfigRevisionPostgresRepository) GetActive(ctx context.Context) (*entity.ConfigRevision, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	row, err := q.GetActiveConfigRevision(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -97,7 +98,7 @@ func (r *ConfigRevisionPostgresRepository) List(ctx context.Context, filter repo
 	}
 
 	query += ` ORDER BY created DESC LIMIT $` + fmt.Sprintf("%d", len(args)+1) + ` OFFSET $` + fmt.Sprintf("%d", len(args)+2)
-	
+
 	rows, err := r.db.QueryContext(ctx, query, append(args, limit, offset)...)
 	if err != nil {
 		return nil, 0, err
@@ -136,8 +137,8 @@ func (r *ConfigRevisionPostgresRepository) List(ctx context.Context, filter repo
 
 // Create создаёт новую ревизию
 func (r *ConfigRevisionPostgresRepository) Create(ctx context.Context, revision *entity.ConfigRevision) error {
-	q := coredb.New(r.db)
-	
+	q := coredb.Queries{DB: r.db}
+
 	data := revision.Data
 	if data == nil {
 		data = []byte("{}")
@@ -160,7 +161,7 @@ func (r *ConfigRevisionPostgresRepository) Create(ctx context.Context, revision 
 
 // Update обновляет ревизию
 func (r *ConfigRevisionPostgresRepository) Update(ctx context.Context, revision *entity.ConfigRevision) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 
 	data := revision.Data
 	if data == nil {
@@ -178,13 +179,14 @@ func (r *ConfigRevisionPostgresRepository) Update(ctx context.Context, revision 
 
 // Delete удаляет ревизию
 func (r *ConfigRevisionPostgresRepository) Delete(ctx context.Context, id types.ID) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	_, err := q.DeleteConfigRevision(ctx, id)
 	return err
 }
 
 // SetActive делает ревизию активной
 func (r *ConfigRevisionPostgresRepository) SetActive(ctx context.Context, id types.ID) error {
-	q := coredb.New(r.db)
-	return q.SetActiveConfigRevision(ctx, id)
+	q := coredb.Queries{DB: r.db}
+	_, err := q.SetActiveConfigRevision(ctx, id)
+	return err
 }

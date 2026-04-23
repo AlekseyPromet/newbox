@@ -10,6 +10,9 @@ import (
 	"netbox_go/internal/domain/core/repository"
 	coredb "netbox_go/internal/infrastructure/storage/sqlc/core"
 	"netbox_go/pkg/types"
+
+	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 // JobPostgresRepository реализует JobRepository для PostgreSQL
@@ -24,7 +27,7 @@ func NewJobPostgresRepository(db *sql.DB) repository.JobRepository {
 
 // GetByID возвращает задачу по ID
 func (r *JobPostgresRepository) GetByID(ctx context.Context, id types.ID) (*entity.Job, error) {
-	q := coredb.New(r.db)
+	q := &coredb.Queries{DB: r.db}
 	row, err := q.GetJobByID(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -34,21 +37,21 @@ func (r *JobPostgresRepository) GetByID(ctx context.Context, id types.ID) (*enti
 	}
 
 	return &entity.Job{
-		ID:           row.ID,
-		ObjectType:   row.ObjectType,
-		ObjectID:     row.ObjectID,
-		Name:         row.Name,
-		Status:       types.Status(row.Status),
-		Interval:     row.Interval,
-		ScheduledAt:  row.ScheduledAt,
-		StartedAt:    row.StartedAt,
-		CompletedAt:  row.CompletedAt,
-		QueueName:    row.QueueName,
-		JobID:        row.JobID,
-		Data:         row.Data,
-		Error:        row.Error,
-		Created:      row.Created,
-		Updated:      row.Updated,
+		ID:          row.ID,
+		ObjectType:  row.ObjectType.String,
+		ObjectID:    types.ID(row.ObjectID.UUID),
+		Name:        row.Name,
+		Status:      types.Status(row.Status),
+		Interval:    int(row.Interval.Int32),
+		ScheduledAt: row.ScheduledAt.Time,
+		StartedAt:   row.StartedAt.Time,
+		CompletedAt: row.CompletedAt.Time,
+		QueueName:   row.QueueName.String,
+		JobID:       row.JobID.String,
+		Data:        row.Data.RawMessage,
+		Error:       row.Error.String,
+		Created:     row.Created,
+		Updated:     row.Updated,
 	}, nil
 }
 
@@ -118,21 +121,21 @@ func (r *JobPostgresRepository) List(ctx context.Context, filter repository.JobF
 	var result []*entity.Job
 	for rows.Next() {
 		var row struct {
-			ID           types.ID
-			ObjectType   string
-			ObjectID     types.ID
-			Name         string
-			Status       string
-			Interval     string
-			ScheduledAt  time.Time
-			StartedAt    sql.NullTime
-			CompletedAt  sql.NullTime
-			QueueName    string
-			JobID        sql.NullString
-			Data         []byte
-			Error        sql.NullString
-			Created      time.Time
-			Updated      time.Time
+			ID          types.ID
+			ObjectType  string
+			ObjectID    types.ID
+			Name        string
+			Status      string
+			Interval    string
+			ScheduledAt time.Time
+			StartedAt   sql.NullTime
+			CompletedAt sql.NullTime
+			QueueName   string
+			JobID       sql.NullString
+			Data        []byte
+			Error       sql.NullString
+			Created     time.Time
+			Updated     time.Time
 		}
 		if err := rows.Scan(&row.ID, &row.ObjectType, &row.ObjectID, &row.Name, &row.Status, &row.Interval, &row.ScheduledAt, &row.StartedAt, &row.CompletedAt, &row.QueueName, &row.JobID, &row.Data, &row.Error, &row.Created, &row.Updated); err != nil {
 			return nil, 0, err
@@ -147,21 +150,21 @@ func (r *JobPostgresRepository) List(ctx context.Context, filter repository.JobF
 		}
 
 		result = append(result, &entity.Job{
-			ID:           row.ID,
-			ObjectType:   row.ObjectType,
-			ObjectID:     row.ObjectID,
-			Name:         row.Name,
-			Status:       types.Status(row.Status),
-			Interval:     row.Interval,
-			ScheduledAt:  row.ScheduledAt,
-			StartedAt:    startedAt,
-			CompletedAt:  completedAt,
-			QueueName:    row.QueueName,
-			JobID:        row.JobID.String,
-			Data:         row.Data,
-			Error:        row.Error.String,
-			Created:      row.Created,
-			Updated:      row.Updated,
+			ID:          row.ID,
+			ObjectType:  row.ObjectType,
+			ObjectID:    row.ObjectID,
+			Name:        row.Name,
+			Status:      types.Status(row.Status),
+			Interval:    0, // row.Interval is string in the anonymous struct, but entity.Job.Interval is int.
+			ScheduledAt: row.ScheduledAt,
+			StartedAt:   *startedAt,
+			CompletedAt: *completedAt,
+			QueueName:   row.QueueName,
+			JobID:       row.JobID.String,
+			Data:        row.Data,
+			Error:       row.Error.String,
+			Created:     row.Created,
+			Updated:     row.Updated,
 		})
 	}
 
@@ -176,8 +179,8 @@ func (r *JobPostgresRepository) List(ctx context.Context, filter repository.JobF
 
 // Create создаёт новую задачу
 func (r *JobPostgresRepository) Create(ctx context.Context, job *entity.Job) error {
-	q := coredb.New(r.db)
-	
+	q := &coredb.Queries{DB: r.db}
+
 	data := job.Data
 	if data == nil {
 		data = []byte("{}")
@@ -191,28 +194,28 @@ func (r *JobPostgresRepository) Create(ctx context.Context, job *entity.Job) err
 	}
 
 	var startedAt, completedAt sql.NullTime
-	if job.StartedAt != nil {
-		startedAt = sql.NullTime{Time: *job.StartedAt, Valid: true}
+	if !job.StartedAt.IsZero() {
+		startedAt = sql.NullTime{Time: job.StartedAt, Valid: true}
 	}
-	if job.CompletedAt != nil {
-		completedAt = sql.NullTime{Time: *job.CompletedAt, Valid: true}
+	if !job.CompletedAt.IsZero() {
+		completedAt = sql.NullTime{Time: job.CompletedAt, Valid: true}
 	}
 
 	row, err := q.CreateJob(ctx, coredb.CreateJobParams{
-		ObjectType:   job.ObjectType,
-		ObjectID:     job.ObjectID,
-		Name:         job.Name,
-		Status:       string(job.Status),
-		Interval:     job.Interval,
-		ScheduledAt:  scheduledAt,
-		StartedAt:    startedAt,
-		CompletedAt:  completedAt,
-		QueueName:    job.QueueName,
-		JobID:        sql.NullString{String: job.JobID, Valid: job.JobID != ""},
-		Data:         data,
-		Error:        sql.NullString{String: job.Error, Valid: job.Error != ""},
-		Created:      time.Now(),
-		Updated:      time.Now(),
+		ObjectType:  sql.NullString{String: job.ObjectType, Valid: job.ObjectType != ""},
+		ObjectID:    uuid.NullUUID{UUID: uuid.MustParse(job.ObjectID.String()), Valid: job.ObjectID.String() != ""},
+		Name:        job.Name,
+		Status:      string(job.Status),
+		Interval:    sql.NullInt32{Int32: int32(job.Interval), Valid: job.Interval != 0},
+		ScheduledAt: scheduledAt,
+		StartedAt:   startedAt,
+		CompletedAt: completedAt,
+		QueueName:   sql.NullString{String: job.QueueName, Valid: job.QueueName != ""},
+		JobID:       sql.NullString{String: job.JobID, Valid: job.JobID != ""},
+		Data:        pqtype.NullRawMessage{RawMessage: data, Valid: true},
+		Error:       sql.NullString{String: job.Error, Valid: job.Error != ""},
+		Created:     time.Now(),
+		Updated:     time.Now(),
 	})
 	if err != nil {
 		return err
@@ -226,7 +229,7 @@ func (r *JobPostgresRepository) Create(ctx context.Context, job *entity.Job) err
 
 // Update обновляет задачу
 func (r *JobPostgresRepository) Update(ctx context.Context, job *entity.Job) error {
-	q := coredb.New(r.db)
+	q := &coredb.Queries{DB: r.db}
 
 	data := job.Data
 	if data == nil {
@@ -237,60 +240,64 @@ func (r *JobPostgresRepository) Update(ctx context.Context, job *entity.Job) err
 	if !job.ScheduledAt.IsZero() {
 		scheduledAt = sql.NullTime{Time: job.ScheduledAt, Valid: true}
 	}
-	if job.StartedAt != nil {
-		startedAt = sql.NullTime{Time: *job.StartedAt, Valid: true}
+	if !job.StartedAt.IsZero() {
+		startedAt = sql.NullTime{Time: job.StartedAt, Valid: true}
 	}
-	if job.CompletedAt != nil {
-		completedAt = sql.NullTime{Time: *job.CompletedAt, Valid: true}
+	if !job.CompletedAt.IsZero() {
+		completedAt = sql.NullTime{Time: job.CompletedAt, Valid: true}
 	}
 
 	_, err := q.UpdateJob(ctx, coredb.UpdateJobParams{
-		ID:           job.ID,
-		ObjectType:   job.ObjectType,
-		ObjectID:     job.ObjectID,
-		Name:         job.Name,
-		Status:       string(job.Status),
-		Interval:     job.Interval,
-		ScheduledAt:  scheduledAt,
-		StartedAt:    startedAt,
-		CompletedAt:  completedAt,
-		QueueName:    job.QueueName,
-		JobID:        sql.NullString{String: job.JobID, Valid: job.JobID != ""},
-		Data:         data,
-		Error:        sql.NullString{String: job.Error, Valid: job.Error != ""},
-		Updated:      time.Now(),
+		ID:          job.ID,
+		ObjectType:  sql.NullString{String: job.ObjectType, Valid: job.ObjectType != ""},
+		ObjectID:    uuid.NullUUID{UUID: uuid.MustParse(job.ObjectID.String()), Valid: job.ObjectID.String() != ""},
+		Name:        job.Name,
+		Status:      string(job.Status),
+		Interval:    sql.NullInt32{Int32: int32(job.Interval), Valid: job.Interval != 0},
+		ScheduledAt: scheduledAt,
+		StartedAt:   startedAt,
+		CompletedAt: completedAt,
+		QueueName:   sql.NullString{String: job.QueueName, Valid: job.QueueName != ""},
+		JobID:       sql.NullString{String: job.JobID, Valid: job.JobID != ""},
+		Data:        pqtype.NullRawMessage{RawMessage: data, Valid: true},
+		Error:       sql.NullString{String: job.Error, Valid: job.Error != ""},
+		Updated:     time.Now(),
 	})
 	return err
 }
 
 // Delete удаляет задачу
 func (r *JobPostgresRepository) Delete(ctx context.Context, id types.ID) error {
-	q := coredb.New(r.db)
+	q := &coredb.Queries{DB: r.db}
 	_, err := q.DeleteJob(ctx, id)
 	return err
 }
 
 // UpdateStatus обновляет статус задачи
 func (r *JobPostgresRepository) UpdateStatus(ctx context.Context, id types.ID, status types.Status, jobError *string, completedAt *time.Time) error {
-	q := coredb.New(r.db)
+	q := &coredb.Queries{DB: r.db}
 
 	var completedAtNull sql.NullTime
 	if completedAt != nil {
 		completedAtNull = sql.NullTime{Time: *completedAt, Valid: true}
 	}
 
-	return q.UpdateJobStatus(ctx, coredb.UpdateJobStatusParams{
+	_, err := q.UpdateJobStatus(ctx, coredb.UpdateJobStatusParams{
 		ID:          id,
 		Status:      string(status),
 		Error:       sql.NullString{String: valOrEmpty(jobError), Valid: jobError != nil},
 		CompletedAt: completedAtNull,
 	})
+	return err
 }
 
 // GetScheduled возвращает запланированные задачи
 func (r *JobPostgresRepository) GetScheduled(ctx context.Context, before time.Time, limit int) ([]*entity.Job, error) {
-	q := coredb.New(r.db)
-	rows, err := q.GetScheduledJobs(ctx, before, int32(limit))
+	q := &coredb.Queries{DB: r.db}
+	rows, err := q.GetScheduledJobs(ctx, coredb.GetScheduledJobsParams{
+		ScheduledAt: sql.NullTime{Time: before, Valid: true},
+		Limit:       int32(limit),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -306,21 +313,21 @@ func (r *JobPostgresRepository) GetScheduled(ctx context.Context, before time.Ti
 		}
 
 		result[i] = &entity.Job{
-			ID:           row.ID,
-			ObjectType:   row.ObjectType,
-			ObjectID:     row.ObjectID,
-			Name:         row.Name,
-			Status:       types.Status(row.Status),
-			Interval:     row.Interval,
-			ScheduledAt:  row.ScheduledAt,
-			StartedAt:    startedAt,
-			CompletedAt:  completedAt,
-			QueueName:    row.QueueName,
-			JobID:        row.JobID.String,
-			Data:         row.Data,
-			Error:        row.Error.String,
-			Created:      row.Created,
-			Updated:      row.Updated,
+			ID:          row.ID,
+			ObjectType:  row.ObjectType.String,
+			ObjectID:    types.ID(row.ObjectID.UUID),
+			Name:        row.Name,
+			Status:      types.Status(row.Status),
+			Interval:    int(row.Interval.Int32),
+			ScheduledAt: row.ScheduledAt.Time,
+			StartedAt:   *startedAt,
+			CompletedAt: *completedAt,
+			QueueName:   row.QueueName.String,
+			JobID:       row.JobID.String,
+			Data:        row.Data.RawMessage,
+			Error:       row.Error.String,
+			Created:     row.Created,
+			Updated:     row.Updated,
 		}
 	}
 
@@ -329,12 +336,12 @@ func (r *JobPostgresRepository) GetScheduled(ctx context.Context, before time.Ti
 
 // CleanupOld удаляет старые завершённые задачи
 func (r *JobPostgresRepository) CleanupOld(ctx context.Context, olderThan time.Time) (int64, error) {
-	q := coredb.New(r.db)
-	res, err := q.CleanupOldJobs(ctx, olderThan)
+	q := &coredb.Queries{DB: r.db}
+	res, err := q.CleanupOldJobs(ctx, sql.NullTime{Time: olderThan, Valid: true})
 	if err != nil {
 		return 0, err
 	}
-	return res.RowsAffected(), nil
+	return res, nil
 }
 
 func valOrEmpty(s *string) string {

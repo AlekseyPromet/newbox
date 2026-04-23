@@ -56,33 +56,32 @@ func (r *JobRepositoryPostgres) GetByID(ctx context.Context, id string) (*core_e
 
 	// Заполнение опциональных полей
 	if objectType.Valid {
-		job.ObjectType = &objectType.String
+		job.ObjectType = objectType.String
 	}
 	if objectID.Valid {
 		oid, _ := types.ParseID(objectID.String)
-		job.ObjectID = &oid
+		job.ObjectID = oid
 	}
 	if scheduledAt.Valid {
-		job.ScheduledAt = &scheduledAt.Time
+		job.ScheduledAt = scheduledAt.Time
 	}
 	if startedAt.Valid {
-		job.StartedAt = &startedAt.Time
+		job.StartedAt = startedAt.Time
 	}
 	if completedAt.Valid {
-		job.CompletedAt = &completedAt.Time
+		job.CompletedAt = completedAt.Time
 	}
 	if queueName.Valid {
 		job.QueueName = queueName.String
 	}
 	if jobID.Valid {
-		job.JobID = &jobID.String
+		job.JobID = jobID.String
 	}
 	if dataJSON != nil {
 		job.Data = json.RawMessage(dataJSON)
 	}
 	if errorJSON != nil {
-		errStr := string(errorJSON)
-		job.Error = &errStr
+		job.Error = string(errorJSON)
 	}
 
 	return &job, nil
@@ -173,33 +172,32 @@ func (r *JobRepositoryPostgres) List(ctx context.Context, filter repository.JobF
 		}
 
 		if objectType.Valid {
-			job.ObjectType = &objectType.String
+			job.ObjectType = objectType.String
 		}
 		if objectID.Valid {
 			oid, _ := types.ParseID(objectID.String)
-			job.ObjectID = &oid
+			job.ObjectID = oid
 		}
 		if scheduledAt.Valid {
-			job.ScheduledAt = &scheduledAt.Time
+			job.ScheduledAt = scheduledAt.Time
 		}
 		if startedAt.Valid {
-			job.StartedAt = &startedAt.Time
+			job.StartedAt = startedAt.Time
 		}
 		if completedAt.Valid {
-			job.CompletedAt = &completedAt.Time
+			job.CompletedAt = completedAt.Time
 		}
 		if queueName.Valid {
 			job.QueueName = queueName.String
 		}
 		if jobID.Valid {
-			job.JobID = &jobID.String
+			job.JobID = jobID.String
 		}
 		if dataJSON != nil {
 			job.Data = json.RawMessage(dataJSON)
 		}
 		if errorJSON != nil {
-			errStr := string(errorJSON)
-			job.Error = &errStr
+			job.Error = string(errorJSON)
 		}
 
 		jobs = append(jobs, &job)
@@ -218,31 +216,31 @@ func (r *JobRepositoryPostgres) Create(ctx context.Context, job *core_entity.Job
 	`
 
 	var objectType, objectID *string
-	if job.ObjectType != nil {
-		objectType = job.ObjectType
+	if job.ObjectType != "" {
+		objectType = &job.ObjectType
 	}
-	if job.ObjectID != nil {
+	if job.ObjectID.String() != "" {
 		oid := job.ObjectID.String()
 		objectID = &oid
 	}
 
 	var scheduledAt, startedAt, completedAt *time.Time
-	if job.ScheduledAt != nil {
-		scheduledAt = job.ScheduledAt
+	if !job.ScheduledAt.IsZero() {
+		scheduledAt = &job.ScheduledAt
 	}
-	if job.StartedAt != nil {
-		startedAt = job.StartedAt
+	if !job.StartedAt.IsZero() {
+		startedAt = &job.StartedAt
 	}
-	if job.CompletedAt != nil {
-		completedAt = job.CompletedAt
+	if !job.CompletedAt.IsZero() {
+		completedAt = &job.CompletedAt
 	}
 
 	var queueName, jobID *string
 	if job.QueueName != "" {
 		queueName = &job.QueueName
 	}
-	if job.JobID != nil {
-		jobID = job.JobID
+	if job.JobID != "" {
+		jobID = &job.JobID
 	}
 
 	var dataJSON []byte
@@ -251,8 +249,8 @@ func (r *JobRepositoryPostgres) Create(ctx context.Context, job *core_entity.Job
 	}
 
 	var errorStr *string
-	if job.Error != nil {
-		errorStr = job.Error
+	if job.Error != "" {
+		errorStr = &job.Error
 	}
 
 	_, err := r.db.ExecContext(ctx, query,
@@ -277,31 +275,31 @@ func (r *JobRepositoryPostgres) Update(ctx context.Context, job *core_entity.Job
 	`
 
 	var objectType, objectID *string
-	if job.ObjectType != nil {
-		objectType = job.ObjectType
+	if job.ObjectType != "" {
+		objectType = &job.ObjectType
 	}
-	if job.ObjectID != nil {
+	if job.ObjectID.String() != "" {
 		oid := job.ObjectID.String()
 		objectID = &oid
 	}
 
 	var scheduledAt, startedAt, completedAt *time.Time
-	if job.ScheduledAt != nil {
-		scheduledAt = job.ScheduledAt
+	if !job.ScheduledAt.IsZero() {
+		scheduledAt = &job.ScheduledAt
 	}
-	if job.StartedAt != nil {
-		startedAt = job.StartedAt
+	if !job.StartedAt.IsZero() {
+		startedAt = &job.StartedAt
 	}
-	if job.CompletedAt != nil {
-		completedAt = job.CompletedAt
+	if !job.CompletedAt.IsZero() {
+		completedAt = &job.CompletedAt
 	}
 
 	var queueName, jobID *string
 	if job.QueueName != "" {
 		queueName = &job.QueueName
 	}
-	if job.JobID != nil {
-		jobID = job.JobID
+	if job.JobID != "" {
+		jobID = &job.JobID
 	}
 
 	var dataJSON []byte
@@ -443,8 +441,8 @@ func (r *JobRepositoryPostgres) Log(ctx context.Context, id string, message stri
 
 	// Добавляем сообщение к существующему error или создаем новое
 	var currentLog string
-	if job.Error != nil {
-		currentLog = *job.Error + "\n"
+	if job.Error != "" {
+		currentLog = job.Error + "\n"
 	}
 	currentLog += fmt.Sprintf("[%s] %s", time.Now().Format(time.RFC3339), message)
 

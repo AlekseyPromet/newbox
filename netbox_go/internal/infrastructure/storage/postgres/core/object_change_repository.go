@@ -10,6 +10,9 @@ import (
 	"netbox_go/internal/domain/core/repository"
 	coredb "netbox_go/internal/infrastructure/storage/sqlc/core"
 	"netbox_go/pkg/types"
+
+	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 // ObjectChangePostgresRepository реализует ObjectChangeRepository для PostgreSQL
@@ -24,7 +27,7 @@ func NewObjectChangePostgresRepository(db *sql.DB) repository.ObjectChangeReposi
 
 // GetByID возвращает запись об изменении по ID
 func (r *ObjectChangePostgresRepository) GetByID(ctx context.Context, id types.ID) (*entity.ObjectChange, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	row, err := q.GetObjectChangeByID(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -34,18 +37,18 @@ func (r *ObjectChangePostgresRepository) GetByID(ctx context.Context, id types.I
 	}
 
 	return &entity.ObjectChange{
-		ID:                 row.ID,
-		Time:               row.Time,
-		UserID:             row.UserID,
-		RequestID:          row.RequestID.String,
-		Action:             types.Status(row.Action),
-		ChangedObjectType:  row.ChangedObjectType,
-		ChangedObjectID:    row.ChangedObjectID,
-		ObjectRepr:         row.ObjectRepr,
-		ObjectData:         row.ObjectData,
-		RelatedObjectType:  row.RelatedObjectType.String,
-		RelatedObjectID:    row.RelatedObjectID.String,
-		RelatedObjectRepr:  row.RelatedObjectRepr.String,
+		ID:                row.ID,
+		Time:              row.Time,
+		UserID:            types.ID(row.UserID.UUID),
+		RequestID:         &row.RequestID.String,
+		Action:            types.Status(row.Action),
+		ChangedObjectType: row.ChangedObjectType,
+		ChangedObjectID:   row.ChangedObjectID,
+		ObjectRepr:        row.ObjectRepr,
+		ObjectData:        row.ObjectData.RawMessage,
+		RelatedObjectType: &row.RelatedObjectType.String,
+		RelatedObjectID:   &row.RelatedObjectID.String,
+		RelatedObjectRepr: &row.RelatedObjectRepr.String,
 	}, nil
 }
 
@@ -119,35 +122,35 @@ func (r *ObjectChangePostgresRepository) List(ctx context.Context, filter reposi
 	var result []*entity.ObjectChange
 	for rows.Next() {
 		var row struct {
-			ID                 types.ID
-			Time               time.Time
-			UserID             types.ID
-			RequestID          sql.NullString
-			Action             string
-			ChangedObjectType  string
-			ChangedObjectID    string
-			ObjectRepr         sql.NullString
-			ObjectData         []byte
-			RelatedObjectType  sql.NullString
-			RelatedObjectID    sql.NullString
-			RelatedObjectRepr  sql.NullString
+			ID                types.ID
+			Time              time.Time
+			UserID            types.ID
+			RequestID         sql.NullString
+			Action            string
+			ChangedObjectType string
+			ChangedObjectID   string
+			ObjectRepr        sql.NullString
+			ObjectData        []byte
+			RelatedObjectType sql.NullString
+			RelatedObjectID   sql.NullString
+			RelatedObjectRepr sql.NullString
 		}
 		if err := rows.Scan(&row.ID, &row.Time, &row.UserID, &row.RequestID, &row.Action, &row.ChangedObjectType, &row.ChangedObjectID, &row.ObjectRepr, &row.ObjectData, &row.RelatedObjectType, &row.RelatedObjectID, &row.RelatedObjectRepr); err != nil {
 			return nil, 0, err
 		}
 		result = append(result, &entity.ObjectChange{
-			ID:                 row.ID,
-			Time:               row.Time,
-			UserID:             row.UserID,
-			RequestID:          row.RequestID.String,
-			Action:             types.Status(row.Action),
-			ChangedObjectType:  row.ChangedObjectType,
-			ChangedObjectID:    row.ChangedObjectID,
-			ObjectRepr:         row.ObjectRepr.String,
-			ObjectData:         row.ObjectData,
-			RelatedObjectType:  row.RelatedObjectType.String,
-			RelatedObjectID:    row.RelatedObjectID.String,
-			RelatedObjectRepr:  row.RelatedObjectRepr.String,
+			ID:                row.ID,
+			Time:              row.Time,
+			UserID:            row.UserID,
+			RequestID:         new(row.RequestID.String),
+			Action:            types.Status(row.Action),
+			ChangedObjectType: row.ChangedObjectType,
+			ChangedObjectID:   row.ChangedObjectID,
+			ObjectRepr:        row.ObjectRepr.String,
+			ObjectData:        row.ObjectData,
+			RelatedObjectType: new(row.RelatedObjectType.String),
+			RelatedObjectID:   new(row.RelatedObjectID.String),
+			RelatedObjectRepr: new(row.RelatedObjectRepr.String),
 		})
 	}
 
@@ -160,27 +163,30 @@ func (r *ObjectChangePostgresRepository) List(ctx context.Context, filter reposi
 	return result, count, nil
 }
 
+func getNullUuid(s types.ID) uuid.NullUUID {
+	u, err := uuid.Parse(s.String())
+	if err != nil {
+		return uuid.NullUUID{}
+	}
+	return uuid.NullUUID{UUID: u, Valid: true}
+}
+
 // Create создаёт запись об изменении
 func (r *ObjectChangePostgresRepository) Create(ctx context.Context, change *entity.ObjectChange) error {
-	q := coredb.New(r.db)
-
-	data := change.ObjectData
-	if data == nil {
-		data = []byte("{}")
-	}
+	q := coredb.Queries{DB: r.db}
 
 	row, err := q.CreateObjectChange(ctx, coredb.CreateObjectChangeParams{
-		Time:               time.Now(),
-		UserID:             change.UserID,
-		RequestID:          sql.NullString{String: valOrEmpty(change.RequestID), Valid: change.RequestID != nil},
-		Action:             string(change.Action),
-		ChangedObjectType:  change.ChangedObjectType,
-		ChangedObjectID:    change.ChangedObjectID,
-		ObjectRepr:         change.ObjectRepr,
-		ObjectData:         data,
-		RelatedObjectType:  sql.NullString{String: valOrEmpty(change.RelatedObjectType), Valid: change.RelatedObjectType != nil},
-		RelatedObjectID:    sql.NullString{String: valOrEmpty(change.RelatedObjectID), Valid: change.RelatedObjectID != nil},
-		RelatedObjectRepr:  sql.NullString{String: valOrEmpty(change.RelatedObjectRepr), Valid: change.RelatedObjectRepr != nil},
+		Time:              time.Now(),
+		UserID:            getNullUuid(change.UserID),
+		RequestID:         sql.NullString{String: valOrEmpty(change.RequestID), Valid: change.RequestID != nil},
+		Action:            string(change.Action),
+		ChangedObjectType: change.ChangedObjectType,
+		ChangedObjectID:   change.ChangedObjectID,
+		ObjectRepr:        change.ObjectRepr,
+		ObjectData:        pqtype.NullRawMessage{RawMessage: change.ObjectData},
+		RelatedObjectType: sql.NullString{String: valOrEmpty(change.RelatedObjectType), Valid: change.RelatedObjectType != nil},
+		RelatedObjectID:   sql.NullString{String: valOrEmpty(change.RelatedObjectID), Valid: change.RelatedObjectID != nil},
+		RelatedObjectRepr: sql.NullString{String: valOrEmpty(change.RelatedObjectRepr), Valid: change.RelatedObjectRepr != nil},
 	})
 	if err != nil {
 		return err
@@ -193,48 +199,41 @@ func (r *ObjectChangePostgresRepository) Create(ctx context.Context, change *ent
 
 // BulkCreate создаёт несколько записей об изменениях
 func (r *ObjectChangePostgresRepository) BulkCreate(ctx context.Context, changes []*entity.ObjectChange) error {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 
-	params := make([]coredb.BulkCreateObjectChangesParams, len(changes))
 	now := time.Now()
 
 	for i, change := range changes {
-		data := change.ObjectData
-		if data == nil {
-			data = []byte("{}")
+
+		params := coredb.BulkCreateObjectChangesParams{
+			Time:              now,
+			UserID:            getNullUuid(change.UserID),
+			RequestID:         sql.NullString{String: valOrEmpty(change.RequestID), Valid: change.RequestID != nil},
+			Action:            string(change.Action),
+			ChangedObjectType: change.ChangedObjectType,
+			ChangedObjectID:   change.ChangedObjectID,
+			ObjectRepr:        change.ObjectRepr,
+			ObjectData:        pqtype.NullRawMessage{RawMessage: change.ObjectData},
+			RelatedObjectType: sql.NullString{String: valOrEmpty(change.RelatedObjectType), Valid: change.RelatedObjectType != nil},
+			RelatedObjectID:   sql.NullString{String: valOrEmpty(change.RelatedObjectID), Valid: change.RelatedObjectID != nil},
+			RelatedObjectRepr: sql.NullString{String: valOrEmpty(change.RelatedObjectRepr), Valid: change.RelatedObjectRepr != nil},
 		}
 
-		params[i] = coredb.BulkCreateObjectChangesParams{
-			Time:               now,
-			UserID:             change.UserID,
-			RequestID:          sql.NullString{String: valOrEmpty(change.RequestID), Valid: change.RequestID != nil},
-			Action:             string(change.Action),
-			ChangedObjectType:  change.ChangedObjectType,
-			ChangedObjectID:    change.ChangedObjectID,
-			ObjectRepr:         change.ObjectRepr,
-			ObjectData:         data,
-			RelatedObjectType:  sql.NullString{String: valOrEmpty(change.RelatedObjectType), Valid: change.RelatedObjectType != nil},
-			RelatedObjectID:    sql.NullString{String: valOrEmpty(change.RelatedObjectID), Valid: change.RelatedObjectID != nil},
-			RelatedObjectRepr:  sql.NullString{String: valOrEmpty(change.RelatedObjectRepr), Valid: change.RelatedObjectRepr != nil},
+		err := q.BulkCreateObjectChanges(ctx, params)
+		if err != nil {
+			return fmt.Errorf("%d %v", i, err)
 		}
 	}
 
-	return q.BulkCreateObjectChanges(ctx, params)
+	return nil
 }
 
 // DeleteOld удаляет старые записи (старше cutoffTime)
 func (r *ObjectChangePostgresRepository) DeleteOld(ctx context.Context, cutoffTime time.Time) (int64, error) {
-	q := coredb.New(r.db)
+	q := coredb.Queries{DB: r.db}
 	result, err := q.DeleteOldObjectChanges(ctx, cutoffTime)
 	if err != nil {
 		return 0, err
 	}
-	return result.RowsAffected(), nil
-}
-
-func valOrEmpty(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
+	return result, nil
 }

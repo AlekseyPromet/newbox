@@ -1,13 +1,9 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
-	"log"
 	"os"
-
-	"netbox_go/internal/worker"
 )
 
 func main() {

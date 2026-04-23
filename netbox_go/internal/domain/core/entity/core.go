@@ -52,7 +52,7 @@ func (ot *ObjectType) Validate() error {
 type ObjectChange struct {
 	ID                types.ID        `json:"id"`
 	Time              time.Time       `json:"time"`
-	UserID            *types.ID       `json:"user_id,omitempty"`
+	UserID            types.ID        `json:"user_id,omitempty"`
 	RequestID         *string         `json:"request_id,omitempty"`
 	Action            types.Status    `json:"action"`
 	ChangedObjectType string          `json:"changed_object_type"`
@@ -139,20 +139,20 @@ func (df *DataFile) Validate() error {
 // Job описывает фоновую задачу (jobs/tasks).
 type Job struct {
 	ID          types.ID        `json:"id"`
-	ObjectType  *string         `json:"object_type,omitempty"`
-	ObjectID    *types.ID       `json:"object_id,omitempty"`
-	UserID      *types.ID       `json:"user_id,omitempty"`
+	ObjectType  string          `json:"object_type,omitempty"`
+	ObjectID    types.ID        `json:"object_id,omitempty"`
+	UserID      types.ID        `json:"user_id,omitempty"`
 	Object      interface{}     `json:"object,omitempty"`
 	Name        string          `json:"name"`
 	Status      types.Status    `json:"status"`
 	Interval    int             `json:"interval,omitempty"` // минуты
-	ScheduledAt *time.Time      `json:"scheduled_at,omitempty"`
-	StartedAt   *time.Time      `json:"started_at,omitempty"`
-	CompletedAt *time.Time      `json:"completed_at,omitempty"`
+	ScheduledAt time.Time       `json:"scheduled_at,omitempty"`
+	StartedAt   time.Time       `json:"started_at,omitempty"`
+	CompletedAt time.Time       `json:"completed_at,omitempty"`
 	QueueName   string          `json:"queue_name,omitempty"`
-	JobID       *string         `json:"job_id,omitempty"`
+	JobID       string          `json:"job_id,omitempty"`
 	Data        json.RawMessage `json:"data,omitempty"`
-	Error       *string         `json:"error,omitempty"`
+	Error       string          `json:"error,omitempty"`
 	Created     time.Time       `json:"created"`
 	Updated     time.Time       `json:"updated"`
 }
